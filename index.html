@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>世界遺産クイズ道場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Yusei+Magic&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0a0c;
+    --bg2:#171115;
+    --bg3:#221219;
+    --red:#ff0033;
+    --red-soft:#ff6b86;
+    --red-deep:#c20026;
+    --gold:#ffce3a;
+    --gold-soft:#ffe08a;
+    --white:#f5f3f4;
+    --dim:#b3a9af;
+    --green:#3fcf86;
+    --shadow:rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Noto Sans JP',sans-serif;
+    background:radial-gradient(120% 80% at 50% -10%,#2a0a14 0%,var(--bg) 60%);
+    color:var(--white);
+    min-height:100dvh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:.85;pointer-events:none;}
+  .wrap{
+    position:relative;z-index:1;
+    max-width:680px;margin:0 auto;
+    padding:clamp(12px,3.5vw,28px) clamp(12px,4vw,24px) 48px;
+    min-height:100dvh;
+  }
+  .screen{display:none;animation:fade .35s ease;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ===== Header / Title ===== */
+  .crest{text-align:center;margin-bottom:clamp(14px,3vw,22px);}
+  .crest .seal{
+    display:inline-block;font-size:clamp(11px,2.8vw,13px);letter-spacing:.22em;
+    color:var(--red-soft);border:1px solid var(--red);border-radius:30px;
+    padding:5px 16px;margin-bottom:16px;background:rgba(255,0,51,.08);
+    box-shadow:0 0 14px rgba(255,0,51,.25);font-weight:700;
+  }
+  h1{
+    font-family:'Dela Gothic One',sans-serif;
+    font-size:clamp(30px,9.5vw,56px);font-weight:400;margin:0;line-height:1.1;letter-spacing:.005em;
+    color:var(--white);
+    text-shadow:0 0 22px rgba(255,0,51,.45),0 0 40px rgba(255,206,58,.12);
+  }
+  h1 .yt{color:var(--red);text-shadow:0 0 18px rgba(255,0,51,.7);}
+  h1 .dojo{color:var(--gold);text-shadow:0 0 18px rgba(255,206,58,.6);}
+  .subtitle{margin-top:14px;color:var(--dim);font-size:clamp(13px,3.4vw,16px);letter-spacing:.04em;line-height:1.6;}
+  .datenote{
+    display:inline-block;margin-top:12px;font-size:clamp(11px,3vw,13px);font-weight:700;
+    color:var(--gold-soft);background:rgba(255,206,58,.08);border:1px solid rgba(255,206,58,.3);
+    border-radius:30px;padding:6px 15px;letter-spacing:.03em;
+  }
+
+  .howto{
+    background:linear-gradient(160deg,var(--bg2),var(--bg3));
+    border:1px solid rgba(255,0,51,.28);border-radius:16px;
+    padding:clamp(14px,3.5vw,20px);margin:clamp(16px,4vw,26px) 0;
+    box-shadow:0 6px 22px var(--shadow);
+  }
+  .howto h3{margin:0 0 10px;color:var(--red-soft);font-size:clamp(15px,3.8vw,17px);font-weight:900;letter-spacing:.04em;}
+  .howto ul{margin:0;padding-left:1.2em;line-height:1.9;font-size:clamp(13px,3.4vw,15px);color:#ece6e9;}
+  .howto ul b{color:var(--gold-soft);}
+  .howto .tap-hint{
+    margin-top:14px;text-align:center;font-weight:700;color:var(--red-soft);
+    font-size:clamp(15px,4vw,18px);letter-spacing:.03em;font-family:'Yusei Magic',sans-serif;
+  }
+  .howto .tap-hint span{display:inline-block;animation:pulse 1.5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:.9;}50%{transform:scale(1.07);opacity:1;}}
+
+  .section-label{
+    text-align:center;color:var(--red-soft);font-size:clamp(13px,3.4vw,15px);
+    letter-spacing:.2em;margin:6px 0 14px;font-weight:700;
+  }
+  .section-label::before,.section-label::after{content:"—　";color:rgba(255,0,51,.5);}
+  .section-label::after{content:"　—";}
+
+  /* ===== Genre cards ===== */
+  .genres{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2.6vw,14px);}
+  .gcard{
+    background:linear-gradient(155deg,#27141b,#1a0f14);
+    border:1px solid rgba(255,0,51,.28);border-radius:16px;
+    padding:clamp(16px,4vw,22px) clamp(10px,3vw,16px) clamp(22px,4.6vw,26px);
+    cursor:pointer;text-align:center;position:relative;overflow:hidden;
+    transition:transform .15s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .gcard:active{transform:scale(.97);}
+  @media (hover:hover) and (pointer:fine){
+    .gcard:hover{border-color:var(--red);box-shadow:0 8px 24px var(--shadow),0 0 0 1px rgba(255,0,51,.25) inset;}
+  }
+  .gcard .ji{font-size:clamp(32px,9.5vw,46px);line-height:1;filter:drop-shadow(0 2px 10px rgba(255,0,51,.35));}
+  .gcard .nm{margin-top:8px;font-weight:900;font-size:clamp(13px,3.7vw,16px);color:var(--white);}
+  .gcard .ct{margin-top:4px;font-size:11px;color:var(--dim);}
+  .gcard::after{content:"クリックで即スタート";position:absolute;left:0;right:0;bottom:7px;font-size:10px;color:var(--red-soft);opacity:.9;letter-spacing:.04em;}
+
+  .footer-row{display:flex;justify-content:center;margin-top:26px;gap:10px;flex-wrap:wrap;}
+  .btn{
+    font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;border:none;
+    border-radius:11px;padding:13px 22px;font-size:15px;transition:transform .12s ease,filter .2s ease;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-ghost{background:transparent;border:1px solid var(--dim);color:var(--dim);}
+  @media (hover:hover) and (pointer:fine){
+    .btn-ghost:hover{border-color:var(--red-soft);color:var(--red-soft);}
+  }
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#e0a91f);color:#2a1f04;box-shadow:0 5px 18px rgba(255,206,58,.32);}
+  .btn-crimson{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 5px 18px rgba(255,0,51,.38);}
+  .btn-block{width:100%;}
+
+  /* ===== Modal ===== */
+  .modal-bg{
+    position:fixed;inset:0;z-index:50;background:rgba(6,4,6,.8);
+    display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);
+  }
+  .modal-bg.show{display:flex;animation:fade .25s ease;}
+  .modal{
+    background:linear-gradient(160deg,var(--bg2),var(--bg3));
+    border:1px solid var(--red);border-radius:20px;max-width:380px;width:100%;
+    padding:26px 22px;text-align:center;box-shadow:0 18px 54px rgba(0,0,0,.65);
+  }
+  .modal .ji{font-size:56px;line-height:1;}
+  .modal h2{margin:10px 0 4px;font-size:22px;font-weight:900;}
+  .modal p{margin:6px 0 0;color:var(--dim);font-size:14px;line-height:1.7;}
+  .modal .rules{margin:16px 0 20px;font-size:13px;color:#ece6e9;line-height:1.85;background:rgba(0,0,0,.22);border-radius:10px;padding:12px;}
+  .modal-btns{display:flex;gap:10px;}
+  .modal-btns .btn{flex:1;}
+
+  /* ===== Quiz ===== */
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;}
+  .hud .pill{
+    background:rgba(0,0,0,.32);border:1px solid rgba(255,0,51,.3);border-radius:30px;
+    padding:8px 16px;font-weight:700;font-size:clamp(13px,3.6vw,15px);
+  }
+  .hud .pill .lab{color:var(--dim);font-size:11px;margin-right:6px;font-weight:500;}
+  .hud .score-pill{color:var(--gold);}
+  .hud .time-pill{color:var(--white);}
+  .hud .time-pill.warn{color:var(--red-soft);animation:blink .8s steps(2,end) infinite;}
+  @keyframes blink{50%{opacity:.4;}}
+  .timebar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px;}
+  .timebar .fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--red-soft),var(--red));width:100%;transition:width 1s linear;}
+  .progress{text-align:center;font-size:12px;color:var(--dim);margin-bottom:14px;letter-spacing:.1em;}
+
+  .qcard{
+    background:linear-gradient(160deg,var(--bg2),var(--bg3));
+    border:1px solid rgba(255,0,51,.25);border-radius:18px;
+    padding:clamp(18px,5vw,30px) clamp(16px,4.5vw,26px);box-shadow:0 8px 28px var(--shadow);
+    min-height:230px;display:flex;flex-direction:column;
+  }
+  .qtag{
+    display:inline-block;font-size:11px;letter-spacing:.12em;color:var(--red-soft);
+    border:1px solid rgba(255,0,51,.4);border-radius:30px;padding:3px 12px;margin-bottom:14px;font-weight:700;
+  }
+  .qtype{float:right;font-size:11px;color:var(--dim);margin-top:4px;}
+  .qtext{
+    font-size:clamp(17px,4.8vw,22px);font-weight:700;line-height:1.7;margin-bottom:4px;
+    min-height:2.4em;transition:opacity .3s ease;
+  }
+  .qtext::after{content:"▌";color:var(--red);animation:caret 1s steps(2,end) infinite;margin-left:2px;}
+  .qtext.done::after,.qtext.fade-out::after{content:"";}
+  @keyframes caret{50%{opacity:0;}}
+  .qtext.fade-out{opacity:0;}
+
+  /* buzzer */
+  .buzz-wrap{margin-top:auto;padding-top:20px;text-align:center;}
+  .btn-buzz{
+    font-family:'Dela Gothic One',sans-serif;font-size:clamp(20px,6vw,26px);font-weight:400;
+    color:#fff;background:radial-gradient(circle at 50% 35%,#ff3a5e,var(--red) 55%,var(--red-deep));
+    border:none;border-radius:50%;width:clamp(130px,38vw,150px);height:clamp(130px,38vw,150px);
+    cursor:pointer;box-shadow:0 8px 26px rgba(255,0,51,.5),inset 0 -6px 14px rgba(0,0,0,.3),inset 0 4px 10px rgba(255,255,255,.25);
+    transition:transform .1s ease;letter-spacing:.02em;line-height:1.25;animation:buzzpulse 1.6s ease-in-out infinite;
+  }
+  .btn-buzz:active{transform:scale(.92);}
+  @keyframes buzzpulse{0%,100%{box-shadow:0 8px 26px rgba(255,0,51,.45),inset 0 -6px 14px rgba(0,0,0,.3),inset 0 4px 10px rgba(255,255,255,.25);}50%{box-shadow:0 8px 38px rgba(255,0,51,.85),inset 0 -6px 14px rgba(0,0,0,.3),inset 0 4px 10px rgba(255,255,255,.25);}}
+  .buzz-hint{margin-top:12px;font-size:12px;color:var(--dim);letter-spacing:.05em;}
+
+  .choices{display:none;gap:10px;margin-top:20px;}
+  .choices.show{display:grid;animation:fade .3s ease;}
+  .choice{
+    font-family:'Noto Sans JP',sans-serif;font-size:clamp(15px,4.2vw,18px);font-weight:600;
+    background:#211118;border:1.5px solid rgba(255,0,51,.26);color:var(--white);
+    border-radius:13px;padding:15px 16px;cursor:pointer;text-align:center;
+    transition:transform .12s ease,background .2s ease,border-color .2s ease;min-height:54px;
+    display:flex;align-items:center;justify-content:center;line-height:1.4;
+  }
+  .choice:active{transform:scale(.97);}
+  .choice:focus{outline:none;}
+  .choice:focus-visible{outline:none;}
+  @media (hover:hover) and (pointer:fine){
+    .choice:hover{border-color:var(--red);}
+  }
+  .choice.correct{background:linear-gradient(135deg,#2f9a64,#23744c);border-color:var(--green);color:#fff;}
+  .choice.wrong{background:linear-gradient(135deg,var(--red-deep),#8e0f2a);border-color:var(--red);color:#fff;}
+  .choice.dim{opacity:.4;}
+  .choice[disabled]{cursor:default;}
+
+  /* result overlay (正誤オーバーレイ) */
+  .result-overlay{
+    position:fixed;inset:0;z-index:55;background:rgba(6,4,6,.82);
+    display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);
+  }
+  .result-overlay.show{display:flex;animation:fade .25s ease;}
+  .ro-card{
+    background:linear-gradient(160deg,var(--bg2),var(--bg3));border-radius:22px;
+    max-width:420px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .ro-card.ok{border-color:var(--green);}
+  .ro-card.ng{border-color:var(--red);}
+  .ro-mark{font-size:64px;line-height:1;}
+  .ro-card.ok .ro-mark{color:var(--green);text-shadow:0 0 24px rgba(63,207,134,.5);}
+  .ro-card.ng .ro-mark{color:var(--red);text-shadow:0 0 24px rgba(255,0,51,.5);}
+  .ro-head{font-size:24px;font-weight:900;margin:8px 0 2px;}
+  .ro-card.ok .ro-head{color:var(--green);}
+  .ro-card.ng .ro-head{color:var(--red-soft);}
+  .ro-ans{margin:14px 0 0;font-size:14px;color:var(--dim);}
+  .ro-ans b{display:block;margin-top:4px;font-size:17px;color:var(--gold-soft);font-weight:700;line-height:1.5;}
+  .ro-explain{margin-top:14px;padding:13px 15px;background:rgba(255,206,58,.08);border-left:3px solid var(--gold);border-radius:9px;font-size:13px;line-height:1.8;color:#efe6d3;text-align:left;}
+  .ro-card .btn{margin-top:20px;width:100%;}
+
+  /* feedback toast */
+  .toast{
+    position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);
+    z-index:60;background:rgba(12,8,12,.96);border:1px solid var(--gold);
+    border-radius:14px;padding:14px 22px;max-width:90%;text-align:center;
+    box-shadow:0 10px 32px rgba(0,0,0,.55);
+    opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast .big{font-size:18px;font-weight:900;}
+  .toast.ok .big{color:var(--green);}
+  .toast.ng .big{color:var(--red-soft);}
+  .toast .small{font-size:13px;color:#ece6e9;margin-top:4px;line-height:1.5;}
+
+  /* ===== Result ===== */
+  .result-card{
+    background:linear-gradient(160deg,var(--bg2),var(--bg3));
+    border:1px solid var(--gold);border-radius:20px;padding:28px 22px;text-align:center;
+    box-shadow:0 10px 34px var(--shadow);
+  }
+  .result-card .trophy{font-size:48px;}
+  .result-card h2{margin:8px 0 2px;font-size:24px;font-weight:900;}
+  .result-card .genre-name{color:var(--gold);font-size:15px;}
+  .score-break{margin:20px 0;display:grid;gap:8px;font-size:14px;}
+  .score-break .row{display:flex;justify-content:space-between;padding:9px 14px;background:rgba(0,0,0,.26);border-radius:9px;}
+  .score-break .row .v{font-weight:700;color:var(--gold);}
+  .total-score{font-size:46px;font-weight:900;color:var(--gold);margin:6px 0;text-shadow:0 0 18px rgba(255,206,58,.4);}
+  .total-score small{font-size:18px;color:var(--dim);}
+  .rank-badge{display:inline-block;padding:7px 20px;border-radius:30px;font-weight:900;margin-top:6px;font-size:15px;}
+
+  .name-entry{margin:18px 0;}
+  .name-entry input{
+    font-family:'Noto Sans JP',sans-serif;font-size:16px;padding:11px 14px;border-radius:11px;
+    border:1.5px solid rgba(255,206,58,.4);background:#211118;color:var(--white);width:100%;text-align:center;
+  }
+  .name-entry input:focus{outline:none;border-color:var(--gold);}
+  .result-actions{display:grid;gap:10px;margin-top:18px;}
+
+  /* ===== Review ===== */
+  .review-card{
+    background:linear-gradient(160deg,var(--bg2),var(--bg3));
+    border:1px solid rgba(255,0,51,.42);border-radius:18px;padding:22px 20px;box-shadow:0 8px 28px var(--shadow);
+  }
+  .review-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .review-head .ttl{color:var(--red-soft);font-weight:900;font-size:16px;}
+  .review-head .count{font-size:13px;color:var(--dim);}
+  .review-q{font-size:clamp(16px,4.4vw,20px);font-weight:700;line-height:1.6;margin-bottom:14px;}
+  .ans-line{padding:11px 14px;border-radius:11px;margin-bottom:8px;font-size:14px;line-height:1.6;}
+  .ans-line.yours{background:rgba(255,0,51,.15);border:1px solid rgba(255,0,51,.4);}
+  .ans-line.right{background:rgba(63,207,134,.13);border:1px solid rgba(63,207,134,.45);}
+  .ans-line .lab{font-size:11px;color:var(--dim);display:block;margin-bottom:2px;}
+  .ans-line.yours .val{color:var(--red-soft);font-weight:700;}
+  .ans-line.right .val{color:#7fe6ad;font-weight:700;}
+  .explain{margin-top:12px;padding:13px 15px;background:rgba(255,206,58,.08);border-left:3px solid var(--gold);border-radius:9px;font-size:13px;line-height:1.8;color:#efe6d3;}
+  .review-nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px;}
+  .review-nav .btn{flex:1;}
+  .perfect-msg{text-align:center;padding:30px 10px;color:var(--gold);font-size:18px;line-height:1.7;font-weight:700;}
+
+  /* ===== Ranking ===== */
+  .rank-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .rank-tabs .tab{
+    flex:1;min-width:80px;font-size:12px;font-weight:700;
+    padding:8px 6px;border-radius:9px;border:1px solid rgba(255,0,51,.3);background:#211118;
+    color:var(--dim);cursor:pointer;text-align:center;transition:all .2s ease;
+  }
+  .rank-tabs .tab.active{background:linear-gradient(135deg,var(--gold),#e0a91f);color:#2a1f04;border-color:var(--gold);}
+  .rank-list{list-style:none;margin:0;padding:0;}
+  .rank-list li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;background:rgba(0,0,0,.24);margin-bottom:7px;}
+  .rank-list li .pos{font-weight:900;width:28px;text-align:center;color:var(--dim);font-size:15px;}
+  .rank-list li.top1 .pos{color:#ffd24a;}.rank-list li.top2 .pos{color:#d8d8d8;}.rank-list li.top3 .pos{color:#e08a4f;}
+  .rank-list li .nm{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rank-list li .dt{font-size:11px;color:var(--dim);}
+  .rank-list li .sc{font-weight:900;color:var(--gold);}
+  .rank-empty{text-align:center;color:var(--dim);padding:34px 10px;font-size:14px;line-height:1.7;}
+
+  .back-portal{position:fixed;top:12px;left:12px;z-index:40;}
+  .back-portal a{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:700;text-decoration:none;color:var(--dim);
+    background:rgba(11,10,12,.85);border:1px solid rgba(255,0,51,.35);border-radius:30px;padding:7px 14px;
+    transition:all .2s ease;backdrop-filter:blur(4px);
+  }
+  @media (hover:hover) and (pointer:fine){
+    .back-portal a:hover{color:var(--red-soft);border-color:var(--red);}
+  }
+
+  .top-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
+  .portal-link{margin-top:12px;text-align:center;}
+  .portal-link a{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;text-decoration:none;
+    color:var(--gold-soft);background:rgba(255,206,58,.08);border:1px solid rgba(255,206,58,.35);
+    border-radius:30px;padding:9px 18px;transition:all .2s ease;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .portal-link a:hover{color:var(--gold);border-color:var(--gold);}
+  }
+
+  @media(max-width:360px){
+    .hud .pill{padding:7px 11px;}
+  }
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<div class="back-portal">
+  <a href="https://pecpec37-gift.github.io/portal/">‹ Tommy-Go</a>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ TITLE ============ -->
+  <section id="screen-title" class="screen active">
+    <div class="crest" style="margin-top:40px;">
+      <div class="seal">早押しクイズ道場 シリーズ</div>
+      <h1><span class="yt">世界遺産</span><br>クイズ<span class="dojo">道場</span></h1>
+      <div class="subtitle">WORLD HERITAGE<br>日本と世界の世界遺産を、<br>早押しクイズで楽しく学ぼう。</div>
+      <div class="datenote">🏛️ 日本・五大陸の世界遺産から出題（全150問以上）</div>
+    </div>
+
+    <div class="howto">
+      <h3>遊び方</h3>
+      <ul>
+        <li>ジャンルから <b>ランダム10問</b>（4択クイズ）を出題</li>
+        <li>問題が流れたら <b>「回答する！」</b> → 4つの選択肢が出現！</li>
+        <li>制限時間は <b>30秒</b>。残った時間はそのまま <b>ボーナス点</b> に！</li>
+        <li>正解 → <b>+10点 ＆ 時間+5秒</b>（「✅ 正解！ +5秒」）</li>
+        <li>不正解 → <b>減点なし・時間−5秒</b>（正解を表示）</li>
+        <li>終了後は <b>間違えた問題を1問ずつ復習</b> できます</li>
+        <li>スコア <b>100点以上で🌸花丸スタンプ</b>（ポータルのランキングに反映）</li>
+        <li>スコアは端末内ランキングに記録（ローカル保存・共有なし）</li>
+      </ul>
+      <div class="tap-hint"><span>▶ ジャンルを選ぶとクリックで即スタート！</span></div>
+    </div>
+
+    <div class="section-label">ジャンルを選ぶ</div>
+    <div class="genres" id="genreGrid"></div>
+
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="showRanking()">🏆 ランキング</button>
+      <button class="btn btn-gold" onclick="openModal('omakase')">🎲 お任せ出題</button>
+    </div>
+
+    <div class="portal-link">
+      <a href="https://pecpec37-gift.github.io/portal/">🏠 ポータルサイトに戻る</a>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="screen-quiz" class="screen">
+    <div class="hud">
+      <div class="pill score-pill"><span class="lab">得点</span><span id="hudScore">0</span></div>
+      <div class="pill time-pill" id="timePill"><span class="lab">残り</span><span id="hudTime">30</span>秒</div>
+    </div>
+    <div class="timebar"><div class="fill" id="timeFill"></div></div>
+    <div class="progress" id="progress">第 1 問 / 10</div>
+
+    <div class="qcard">
+      <span class="qtag" id="qTag">ジャンル</span>
+      <span class="qtype" id="qType">4択</span>
+      <div class="qtext" id="qText"></div>
+      <div class="buzz-wrap" id="buzzWrap">
+        <button class="btn-buzz" onclick="buzz()">回答<br>する！</button>
+        <div class="buzz-hint">押すと選択肢が出ます</div>
+      </div>
+      <div class="choices" id="choices"></div>
+    </div>
+
+    <div class="footer-row">
+      <button class="btn btn-ghost" onclick="quitGame()">やめる</button>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section id="screen-result" class="screen">
+    <div class="result-card">
+      <div class="trophy">🏆</div>
+      <h2>結果発表</h2>
+      <div class="genre-name" id="resGenre">ジャンル</div>
+
+      <div class="total-score"><span id="resTotal">0</span><small> 点</small></div>
+      <div class="rank-badge" id="resBadge">—</div>
+
+      <div class="hanamaru" id="hanamaru" style="display:none;margin:16px auto 4px;padding:13px 16px;border-radius:16px;max-width:340px;background:linear-gradient(135deg,rgba(255,206,58,.2),rgba(255,0,51,.16));border:1.5px solid rgba(255,206,58,.6);">
+        <div style="font-size:30px;line-height:1;">🌸</div>
+        <div style="font-weight:900;color:var(--gold-soft);margin-top:4px;letter-spacing:.03em;">花丸スタンプ獲得！</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:3px;">スコア100点以上達成　ポータルのランキングに反映されます</div>
+      </div>
+
+      <div class="score-break">
+        <div class="row"><span>正解数</span><span class="v"><span id="resCorrect">0</span> / 10 問</span></div>
+        <div class="row"><span>基礎点（正解×10）</span><span class="v"><span id="resBase">0</span> 点</span></div>
+        <div class="row"><span>残り時間ボーナス</span><span class="v">+ <span id="resBonus">0</span> 点</span></div>
+      </div>
+
+      <div class="name-entry" id="nameEntry">
+        <input type="text" id="playerName" placeholder="花丸ランキング用の名前（任意）" maxlength="12">
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-gold btn-block" id="saveBtn" onclick="saveScore()">📥 ランキングに登録</button>
+        <button class="btn btn-crimson btn-block" id="reviewBtn" onclick="showReview()">📖 間違えた問題を復習</button>
+        <button class="btn btn-ghost btn-block" onclick="retrySame()">🔁 同じジャンルに再挑戦</button>
+        <button class="btn btn-ghost btn-block" onclick="goTitle()">🏠 トップへ戻る</button>
+      </div>
+    </div>
+    <div class="portal-link">
+      <a href="https://pecpec37-gift.github.io/portal/">🏠 ポータルサイトに戻る</a>
+    </div>
+  </section>
+
+  <!-- ============ REVIEW ============ -->
+  <section id="screen-review" class="screen">
+    <div class="review-card" id="reviewCard"></div>
+    <div class="footer-row">
+      <button class="btn btn-ghost" onclick="backToResult()">‹ 結果に戻る</button>
+    </div>
+  </section>
+
+  <!-- ============ RANKING ============ -->
+  <section id="screen-ranking" class="screen">
+    <div class="crest" style="margin-top:30px;">
+      <h1 style="font-size:clamp(26px,8vw,42px);">🏆 ランキング</h1>
+      <div class="subtitle">この端末に保存された記録（ジャンル別 / 上位10位）</div>
+    </div>
+    <div class="rank-tabs" id="rankTabs"></div>
+    <ul class="rank-list" id="rankList"></ul>
+    <div class="footer-row" style="gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="goTitle()">🏠 トップへ戻る</button>
+      <button class="btn btn-ghost" onclick="clearRanking()">🗑 この記録を消去</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- confirmation modal（最後の確認） -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="ji" id="modalJi">🏛️</div>
+    <h2 id="modalName">ジャンル</h2>
+    <p id="modalDesc"></p>
+    <div class="rules">
+      ⏱ 30秒　/　全10問　/　正解 +10点・+5秒<br>残り時間はそのままボーナス点に！
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">やめる</button>
+      <button class="btn btn-crimson" onclick="confirmStart()">スタート！</button>
+    </div>
+  </div>
+</div>
+
+<!-- 正誤オーバーレイ -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="ro-card" id="roCard">
+    <div class="ro-mark" id="roMark">◯</div>
+    <div class="ro-head" id="roHead">正解！</div>
+    <div class="ro-ans" id="roAns"></div>
+    <div class="ro-explain" id="roExplain"></div>
+    <button class="btn btn-crimson" onclick="nextQuestion()">次の問題へ ›</button>
+  </div>
+</div>
+
+<!-- feedback toast -->
+<div class="toast" id="toast"><div class="big" id="toastBig"></div><div class="small" id="toastSmall"></div></div>
+
+<!-- ポータル共通：花丸スタンプ送信 -->
+<script src="https://pecpec37-gift.github.io/portal/stamp.js"></script>
+<script>
+/* =========================================================
+   世界遺産クイズ道場／早押しクイズ道場 シリーズ
+   - 4択クイズ / 10問ランダム出題（全体150問以上のバックボーン）
+   - タイプライター → 回答する！ → 選択肢 → 色付け → 問題文フェードイン
+     → 0.6秒後に正誤オーバーレイ → 次の問題へでトースト消去
+   - 30秒 + 残り時間ボーナス / 正解+10点+5秒 / 不正解-5秒
+   - 4択は表示時にシャッフル（正解位置の偏り防止）
+   - ジャンルカードはクリックで即スタート（お任せのみ最後の確認モーダル）
+   - スコア100点以上で花丸スタンプ → ポータルのランキングへ反映
+   - ジャンル別ローカルランキング(localStorage) / 間違い復習
+   - canvas背景の動的リサイズ
+   ========================================================= */
+
+const TOTAL_Q   = 10;
+const START_TIME= 30;      /* 制限時間30秒 */
+const MAX_TIME  = 60;      /* +5秒で伸びる上限 */
+const TYPING_SPEED = 120;  /* ms / 文字（早押しタイプ速度）*/
+const HANAMARU_SCORE = 100;/* 花丸獲得スコア（100点以上）*/
+const STORAGE_KEY = 'world_heritage_quiz_dojo_ranking_v1';
+const STAMP_GAME_ID = 'world-heritage-quiz-dojo';  /* ポータル花丸スタンプ用ID（GitHubリポジトリ名と一致させる）*/
+
+/* ---------- 問題データ ----------
+   4択 : {q, a:正解, w:[誤答3つ], e:解説}
+*/
+const QUIZ = {
+  japan:{
+    name:"日本", ji:"🗾",
+    desc:"法隆寺・姫路城・富士山・屋久島など全26件から出題",
+    pool:[
+      {q:"1993年に姫路城とともに日本初の世界文化遺産となり「現存する世界最古の木造建築物」を含むのは？", a:"法隆寺地域の仏教建造物", w:["東大寺","清水寺","中尊寺"], e:"奈良県斑鳩町。五重塔や金堂が有名。"},
+      {q:"「白鷺城」の別名を持ち、白漆喰の美しい姿で1993年に世界遺産となった城は？", a:"姫路城", w:["松本城","彦根城","熊本城"], e:"兵庫県。日本の城郭建築の最高傑作とされる。"},
+      {q:"縄文杉で知られ、1993年に日本初の世界自然遺産となった鹿児島県の島は？", a:"屋久島", w:["種子島","奄美大島","対馬"], e:"樹齢数千年の屋久杉と豊かな照葉樹林で有名。"},
+      {q:"東アジア最大級のブナ原生林が残る、青森・秋田にまたがる世界自然遺産は？", a:"白神山地", w:["大雪山","奥入瀬渓流","十和田湖"], e:"1993年に世界自然遺産へ登録。"},
+      {q:"清水寺や金閣寺など17件の社寺・城で構成される、1994年登録の世界遺産は？", a:"古都京都の文化財", w:["古都奈良の文化財","古都鎌倉","飛鳥地方"], e:"京都府・滋賀県にまたがる。"},
+      {q:"茅葺きの合掌造り集落で知られる、岐阜県と富山県にまたがる世界遺産は？", a:"白川郷・五箇山の合掌造り集落", w:["妻籠宿","大内宿","美山かやぶきの里"], e:"1995年登録。急勾配の屋根が雪に耐える。"},
+      {q:"「負の遺産」として1996年に登録された、広島市の世界遺産は？", a:"原爆ドーム", w:["平和記念公園","長崎原爆資料館","ひめゆりの塔"], e:"核兵器の惨禍と恒久平和を訴える。"},
+      {q:"海上に建つ朱色の大鳥居で有名な、1996年登録の広島県の世界遺産神社は？", a:"厳島神社", w:["出雲大社","伊勢神宮","住吉大社"], e:"宮島（廿日市市）。潮の満ち引きで景観が変わる。"},
+      {q:"東大寺の大仏や春日大社を含む、1998年登録の世界遺産は？", a:"古都奈良の文化財", w:["古都京都の文化財","飛鳥地方","斑鳩の里"], e:"8つの資産で構成される。"},
+      {q:"徳川家康を祀る東照宮で有名な、1999年登録の栃木県の世界遺産は？", a:"日光の社寺", w:["久能山東照宮","上野東照宮","輪王寺のみ"], e:"「見ざる言わざる聞かざる」の彫刻でも有名。"},
+      {q:"首里城跡などで構成される、2000年登録の沖縄県の世界遺産は？", a:"琉球王国のグスク及び関連遺産群", w:["斎場御嶽のみ","竹富島の集落","座喜味城跡のみ"], e:"琉球王国の歴史と文化を伝える。"},
+      {q:"熊野三山や高野山への参詣道を含む、2004年登録の世界遺産は？", a:"紀伊山地の霊場と参詣道", w:["出羽三山","富士講の道","大峯奥駈道のみ"], e:"和歌山・奈良・三重にまたがる霊場と道。"},
+      {q:"流氷やヒグマで知られる、2005年登録の北海道の世界自然遺産は？", a:"知床", w:["大雪山","釧路湿原","阿寒湖"], e:"海と陸の生態系のつながりが高く評価された。"},
+      {q:"かつて世界有数の銀の産出量を誇った、2007年登録の島根県の世界遺産は？", a:"石見銀山遺跡とその文化的景観", w:["佐渡金山","生野銀山","別子銅山"], e:"環境に配慮した鉱山運営が評価された。"},
+      {q:"中尊寺金色堂で知られる、2011年登録の岩手県の世界遺産は？", a:"平泉", w:["毛越寺のみ","多賀城跡","山寺立石寺"], e:"仏国土（浄土）を表す建築・庭園・遺跡群。"},
+      {q:"「東洋のガラパゴス」とも呼ばれる、2011年登録の東京都の世界自然遺産は？", a:"小笠原諸島", w:["伊豆諸島","南西諸島","尖閣諸島"], e:"独自の進化を遂げた固有種が多い海洋島。"},
+      {q:"「信仰の対象と芸術の源泉」として2013年に世界文化遺産となった山は？", a:"富士山", w:["立山","白山","大山"], e:"自然遺産ではなく文化遺産として登録された。"},
+      {q:"生糸の大量生産を実現した、2014年登録の群馬県の世界遺産は？", a:"富岡製糸場と絹産業遺産群", w:["足尾銅山","八幡製鉄所","岡谷の製糸場"], e:"日本の近代化・産業革命を象徴する。"},
+      {q:"軍艦島（端島）などを含む、2015年登録の世界遺産は？", a:"明治日本の産業革命遺産", w:["富岡製糸場","佐渡島の金山","石見銀山"], e:"製鉄・製鋼・造船・石炭産業の遺産群。"},
+      {q:"建築家ル・コルビュジエの作品として2016年に登録された、東京・上野の建物は？", a:"国立西洋美術館", w:["東京国立博物館","迎賓館赤坂離宮","日本橋"], e:"7か国17資産の一つとして登録された。"},
+      {q:"女人禁制の禁忌で知られる沖ノ島を含む、2017年登録の福岡県の世界遺産は？", a:"「神宿る島」宗像・沖ノ島と関連遺産群", w:["宗像大社のみ","宇佐神宮","厳島神社"], e:"古代の海の祭祀遺跡が良好に残る。"},
+      {q:"大浦天主堂などを含む、2018年登録の長崎・熊本の世界遺産は？", a:"長崎と天草地方の潜伏キリシタン関連遺産", w:["島原の乱の遺跡","五島列島の教会のみ","天草四郎ゆかりの地"], e:"禁教下で信仰を守り継いだ人々の歴史。"},
+      {q:"仁徳天皇陵とされる大山古墳を含む、2019年登録の大阪府の世界遺産は？", a:"百舌鳥・古市古墳群", w:["飛鳥の古墳群","吉野ヶ里遺跡","纒向遺跡"], e:"巨大な前方後円墳が集まる古墳群。"},
+      {q:"アマミノクロウサギなどの固有種で知られる、2021年登録の世界自然遺産は？", a:"奄美大島、徳之島、沖縄島北部及び西表島", w:["屋久島","小笠原諸島","知床半島"], e:"高い生物多様性と固有種が評価された。"},
+      {q:"三内丸山遺跡などを含む、2021年登録の世界文化遺産は？", a:"北海道・北東北の縄文遺跡群", w:["登呂遺跡","吉野ヶ里遺跡","大森貝塚"], e:"1万年以上続いた縄文文化を伝える遺跡群。"},
+      {q:"2024年に登録された、日本で最も新しい世界文化遺産（新潟県）は？", a:"佐渡島の金山", w:["石見銀山","生野銀山","別子銅山"], e:"江戸時代に世界有数の金産出を誇った鉱山。"},
+      {q:"2025年時点で、日本の世界遺産の総数は何件か？", a:"26件", w:["20件","30件","18件"], e:"文化遺産21件＋自然遺産5件の計26件。"},
+      {q:"2025年時点で、日本の世界自然遺産は全部で何件か？", a:"5件", w:["3件","8件","10件"], e:"屋久島・白神山地・知床・小笠原・奄美/沖縄。"},
+      {q:"日本で世界遺産が最初に登録されたのは何年か？", a:"1993年", w:["1990年","1996年","2000年"], e:"法隆寺・姫路城・屋久島・白神山地の4件が最初。"},
+      {q:"合掌造りで有名な「白川郷」がある都道府県は？", a:"岐阜県", w:["富山県","長野県","新潟県"], e:"五箇山は富山県側にある。"},
+      {q:"富士山が世界遺産に登録された際の分類はどれか？", a:"文化遺産", w:["自然遺産","複合遺産","世界の記憶"], e:"信仰・芸術の観点から文化遺産として登録。"},
+      {q:"屋久島に自生する、樹齢数千年ともいわれる巨木の総称は？", a:"屋久杉", w:["縄文松","神代杉","太郎スギ"], e:"標高の高い山地に育つ長寿のスギ。"},
+      {q:"厳島神社があるのはどの都道府県か？", a:"広島県", w:["山口県","岡山県","愛媛県"], e:"宮島（廿日市市）に鎮座する。"},
+      {q:"知床が位置する都道府県はどこか？", a:"北海道", w:["青森県","岩手県","秋田県"], e:"オホーツク海に面する半島。流氷でも有名。"},
+      {q:"石見銀山があるのはどの都道府県か？", a:"島根県", w:["兵庫県","岡山県","広島県"], e:"大森地区を中心とする鉱山遺跡。"},
+      {q:"2026年にイコモスが世界遺産への登録を勧告した、奈良県の宮都の遺産群は？", a:"飛鳥・藤原の宮都", w:["平城京跡","難波宮跡","恭仁京跡"], e:"2026年7月に韓国・釜山の委員会で審議予定の候補。"},
+    ]
+  },
+  asia:{
+    name:"アジア", ji:"⛩️",
+    desc:"アンコール・万里の長城・タージ・マハルなど",
+    pool:[
+      {q:"カンボジアにある、クメール王朝が築いた巨大な石造寺院遺跡は？", a:"アンコール・ワット", w:["バガン","ボロブドゥール","アユタヤ"], e:"12世紀建造。カンボジア国旗にも描かれる。"},
+      {q:"中国の歴代王朝が北方防衛のため築いた、世界最長の城壁は？", a:"万里の長城", w:["紫禁城","兵馬俑坑","楚の長城のみ"], e:"総延長は2万kmを超えるともいわれる。"},
+      {q:"秦の始皇帝陵とともに発見された、多数の陶製兵士像は？", a:"兵馬俑", w:["敦煌莫高窟","龍門石窟","雲崗石窟"], e:"陝西省西安。1974年に農民が発見した。"},
+      {q:"インドのアーグラにある、白大理石の壮麗な霊廟は？", a:"タージ・マハル", w:["赤い城","アンベール城","クトゥブ・ミナール"], e:"ムガル皇帝が亡き妃のために建てた墓廟。"},
+      {q:"インドネシア・ジャワ島にある、世界最大級の仏教遺跡は？", a:"ボロブドゥール", w:["プランバナン","アンコール","バガン"], e:"8〜9世紀建造。ピラミッド状の石造寺院。"},
+      {q:"エベレスト（サガルマータ）を擁する、ネパールの世界自然遺産は？", a:"サガルマータ国立公園", w:["カンチェンジュンガ","アンナプルナ","ランタン渓谷"], e:"世界最高峰8,849mを含む。"},
+      {q:"ヨルダンにある、岩山を削って造られた「バラ色の都市」と呼ばれる遺跡は？", a:"ペトラ", w:["パルミラ","バールベック","ジェラシュ"], e:"ナバテア人が築いた隊商都市。"},
+      {q:"奇岩群と洞窟住居・地下都市で知られる、トルコの複合遺産は？", a:"ギョレメ国立公園とカッパドキア", w:["パムッカレ","エフェソス","トロイ遺跡"], e:"キノコ状の奇岩と洞窟教会が独特の景観をつくる。"},
+      {q:"石灰棚の白い段丘温泉で「綿の城」と呼ばれる、トルコの世界遺産は？", a:"ヒエラポリス・パムッカレ", w:["カッパドキア","エフェソス","アヤソフィアのみ"], e:"温泉が生む真っ白な石灰華の段丘。"},
+      {q:"アケメネス朝ペルシアの都の遺跡である、イランの世界遺産は？", a:"ペルセポリス", w:["イスファハン","パサルガダエ","スーサ"], e:"壮大な宮殿群の柱や浮彫が残る。"},
+      {q:"数多くの仏教寺院跡が残る、タイの古都の世界遺産は？", a:"アユタヤ", w:["スコータイ","バンコク","チェンマイ"], e:"アユタヤ王朝の都。仏頭を包む木の根が有名。"},
+      {q:"獅子の姿を模した岩山の上に築かれた、スリランカの王宮遺跡は？", a:"シギリヤ", w:["ポロンナルワ","アヌラーダプラ","キャンディのみ"], e:"巨岩の頂に王宮があり、壁画（シギリヤ・レディ）でも有名。"},
+      {q:"アンコール遺跡群で、巨大な木の根が遺跡を覆う幻想的な寺院は？", a:"タ・プローム", w:["バンテアイ・スレイ","バイヨン","プレア・ヴィヘア"], e:"ガジュマルの根が石造建築に絡みつく。"},
+      {q:"明・清朝の巨大な宮殿建築群である、中国・北京の世界遺産は？", a:"故宮（紫禁城）", w:["頤和園","天壇","円明園跡"], e:"歴代皇帝が居城とした宮殿。"},
+      {q:"仏教壁画で名高い、インドの石窟寺院群は？", a:"アジャンター石窟群", w:["エローラ石窟群","エレファンタ島","カジュラーホ"], e:"マハーラーシュトラ州。古代インドの仏教美術。"},
+      {q:"「シベリアの真珠」と呼ばれる、世界最深・最古の湖の自然遺産は？", a:"バイカル湖", w:["カスピ海","アラル海","フブスグル湖"], e:"最深約1,600m。透明度も世界屈指。"},
+      {q:"青いタイルのモスクとメドレセで名高い、ウズベキスタンの古都は？", a:"サマルカンド", w:["ブハラ","ヒヴァ","タシケント"], e:"「青の都」。ティムール朝の中心都市。"},
+      {q:"官能的な彫刻で知られる、インドのヒンドゥー寺院群は？", a:"カジュラーホの建造物群", w:["ハンピ","コナーラク","マハーバリプラム"], e:"中世インドの精緻な寺院彫刻。"},
+      {q:"寺院と仏教文化が息づく、ラオスの古都の世界遺産は？", a:"ルアン・パバン", w:["ビエンチャン","バンビエン","パクセー"], e:"町全体が世界遺産。托鉢の風景でも有名。"},
+      {q:"平原に数千の仏塔が林立する、ミャンマーの仏教遺跡は？", a:"バガン", w:["マンダレー","インレー湖","ヤンゴン"], e:"2019年に世界遺産へ登録された。"},
+      {q:"世界最大級の大トカゲが生息する、インドネシアの国立公園は？", a:"コモド国立公園", w:["ウジュン・クロン","ロレンツ","スマトラの熱帯雨林"], e:"コモドドラゴンの生息地。"},
+      {q:"自然と調和した造園で知られる、韓国・ソウルの朝鮮王朝の宮殿は？", a:"昌徳宮", w:["景福宮","徳寿宮","慶熙宮"], e:"後苑（秘苑）の庭園が高く評価される。"},
+      {q:"柱状の奇峰が林立する、中国・湖南省の世界自然遺産は？", a:"武陵源", w:["黄山","九寨溝","廬山"], e:"張家界を含む。映画の舞台にもなった絶景。"},
+      {q:"ナバテア人の岩窟墓で知られる、サウジアラビア初の世界遺産は？", a:"ヘグラ（マダイン・サーレハ）", w:["ディルイーヤ","ジッダ歴史地区","カイバル"], e:"ペトラと同じナバテア文明の遺産。"},
+      {q:"巨大な車輪の彫刻で太陽神を祀る、インドの寺院は？", a:"コナーラクのスーリヤ寺院", w:["カジュラーホ","ハンピ","タンジャーヴール"], e:"太陽神スーリヤの馬車を模した造形。"},
+      {q:"無数の奇岩が海に浮かぶ、ベトナムの景勝の湾は？", a:"ハロン湾", w:["ニンビン","ホイアン","フエ"], e:"石灰岩が生むカルスト地形の海。"},
+    ]
+  },
+  europe:{
+    name:"ヨーロッパ", ji:"🏰",
+    desc:"モン・サン・ミシェル・コロッセオ・アクロポリスなど",
+    pool:[
+      {q:"潮の満ち引きで姿を変える、修道院がそびえるフランスの岩山の世界遺産は？", a:"モン・サン・ミシェル", w:["ヴェルサイユ宮殿","シャルトル大聖堂","カルカソンヌ"], e:"大天使ミカエルに捧げられた修道院。"},
+      {q:"バルセロナにある、ガウディ設計の未完の大聖堂は？", a:"サグラダ・ファミリア", w:["カサ・ミラ","グエル公園のみ","セビリア大聖堂"], e:"アントニ・ガウディの代表作。建設は現在も継続。"},
+      {q:"古代ローマの巨大な円形闘技場である世界遺産は？", a:"コロッセオ", w:["パンテオンのみ","フォロ・ロマーノのみ","カラカラ浴場"], e:"ローマ歴史地区の象徴的建造物。"},
+      {q:"運河が張り巡らされた「水の都」と呼ばれるイタリアの都市は？", a:"ヴェネツィアとその潟", w:["フィレンツェ","ジェノヴァ","ナポリ"], e:"ゴンドラとサン・マルコ広場で有名。"},
+      {q:"花の大聖堂（ドゥオモ）で知られる、ルネサンス芸術の中心都市は？", a:"フィレンツェ歴史地区", w:["シエナ","ピサ","ローマ"], e:"メディチ家が育んだルネサンス文化の街。"},
+      {q:"「白鳥城」とも呼ばれ、2025年に宮殿群として世界遺産に登録されたドイツの城は？", a:"ノイシュヴァンシュタイン城", w:["ハイデルベルク城","ホーエンツォレルン城","ヴァルトブルク城"], e:"バイエルン王ルートヴィヒ2世の宮殿群として2025年登録。"},
+      {q:"パルテノン神殿で有名な、ギリシャ・アテネの丘の遺跡は？", a:"アクロポリス", w:["デルフィ","オリンピア","ミケーネ"], e:"古代ギリシア文明を象徴する聖域。"},
+      {q:"切り立った岩の上に修道院が建つ、ギリシャの世界遺産は？", a:"メテオラ", w:["アトス山","デルフィ","ミストラ"], e:"「中空に浮く」の意。奇岩上の修道院群。"},
+      {q:"巨大な立石が環状に並ぶ、イギリスの先史時代の遺跡は？", a:"ストーンヘンジ", w:["エーヴベリーのみ","ハドリアヌスの長城","バース"], e:"紀元前3000年頃から築造された環状列石。"},
+      {q:"色鮮やかな聖ワシリイ大聖堂を含む、モスクワの世界遺産は？", a:"クレムリンと赤の広場", w:["エルミタージュ","ペテルゴフ","キジ島"], e:"玉ねぎ型ドームの聖堂で有名。"},
+      {q:"国全体が世界遺産となっている、サン・ピエトロ大聖堂がある国は？", a:"バチカン市国", w:["サンマリノ","モナコ","リヒテンシュタイン"], e:"カトリックの総本山。国土全体が世界遺産。"},
+      {q:"「百塔の街」と呼ばれる、カレル橋やプラハ城のある都市は？", a:"プラハ", w:["ブダペスト","ウィーン","クラクフ"], e:"チェコの首都。歴史地区が世界遺産。"},
+      {q:"イスラム建築の傑作とされる、スペイン・グラナダの宮殿は？", a:"アルハンブラ宮殿", w:["セビリアのアルカサル","コルドバのメスキータ","ヒラルダの塔"], e:"ナスル朝の王宮。精緻なアラベスク装飾。"},
+      {q:"「鏡の間」で知られる、ルイ14世が造営したフランスの宮殿は？", a:"ヴェルサイユ宮殿", w:["フォンテーヌブロー宮殿","ルーヴル宮","シャンボール城"], e:"絶対王政の象徴的な宮殿と庭園。"},
+      {q:"ヴェスヴィオ火山の噴火で埋もれた、古代ローマの都市遺跡は？", a:"ポンペイ", w:["ヘルクラネウムのみ","オスティア","パエストゥム"], e:"79年の噴火で火山灰に埋もれた街。"},
+      {q:"城壁に囲まれ「アドリア海の真珠」と呼ばれる、クロアチアの旧市街は？", a:"ドゥブロヴニク", w:["スプリト","プーラ","ザダル"], e:"紺碧の海と赤い屋根の街並み。"},
+      {q:"氷河が削った切り立った入り江の景観で知られる、ノルウェーの自然遺産は？", a:"西ノルウェーフィヨルド", w:["バルト海沿岸","ロフォーテン諸島","北岬"], e:"ガイランゲル・フィヨルドなどを含む。"},
+      {q:"聖ヤコブの墓があるとされる、スペインの巡礼の終着地は？", a:"サンティアゴ・デ・コンポステーラ", w:["ルルド","ファティマ","モンセラート"], e:"キリスト教三大巡礼地の一つ。"},
+      {q:"ナチス・ドイツの強制収容所跡である、ポーランドの「負の遺産」は？", a:"アウシュヴィッツ・ビルケナウ", w:["ダッハウ","ブーヘンヴァルト","テレジン"], e:"ホロコーストの記憶を伝える。"},
+      {q:"ビザンツからオスマンの歴史を映す、イスタンブールの象徴的建築は？", a:"アヤソフィア", w:["トプカプ宮殿のみ","スレイマニエ・モスク","地下宮殿"], e:"イスタンブール歴史地区の中心。"},
+      {q:"国会議事堂と寺院からなる、ロンドンの世界遺産は？", a:"ウェストミンスター宮殿・寺院", w:["バッキンガム宮殿","タワーブリッジ","ハンプトンコート"], e:"王室の戴冠式などが行われる。"},
+      {q:"ローレライ伝説でも知られる、古城が点在するドイツの渓谷は？", a:"ライン渓谷中流上部", w:["モーゼル渓谷","エルベ渓谷","ドナウ渓谷"], e:"ライン川沿いに古城とブドウ畑が続く。"},
+      {q:"アルプス最大級の氷河アレッチを含む、スイスの世界自然遺産は？", a:"スイス・アルプス ユングフラウ-アレッチ", w:["マッターホルン単独","モンブラン","ドロミーティ"], e:"高山と大氷河の景観。"},
+      {q:"ハプスブルク帝国の中心として栄えた、音楽の都の歴史地区は？", a:"ウィーン歴史地区", w:["ザルツブルク","グラーツ","インスブルック"], e:"オーストリアの首都。宮殿や歌劇場が集まる。"},
+      {q:"ドナウ河岸と王宮の夜景で知られる、ハンガリーの首都の世界遺産は？", a:"ブダペスト", w:["ウィーン","プラハ","ブラチスラバ"], e:"くさり橋・国会議事堂の景観。"},
+      {q:"傾いた鐘楼「斜塔」で有名な、イタリアの広場の世界遺産は？", a:"ピサのドゥオモ広場", w:["シエナのカンポ広場","サン・マルコ広場","スペイン広場"], e:"大聖堂・洗礼堂・斜塔が並ぶ。"},
+      {q:"ローマ時代の巨大な水道橋である、フランス南部の世界遺産は？", a:"ポン・デュ・ガール", w:["ニームの円形闘技場","オランジュの劇場","アルル遺跡"], e:"古代ローマの高度な土木技術を示す。"},
+      {q:"ローマ帝国の北限を示す、イギリスの長大な防壁は？", a:"ハドリアヌスの長城", w:["アントニヌスの長城","オファの防塁","万里の長城"], e:"「ローマ帝国の国境線」の一部として登録。"},
+      {q:"完成まで600年以上を要した、双塔がそびえるドイツの大聖堂は？", a:"ケルン大聖堂", w:["アーヘン大聖堂","フライブルク大聖堂","ウルム大聖堂"], e:"ゴシック建築の傑作。"},
+      {q:"「王宮の丘」と歴史地区で知られる、スペイン南部の古都は？", a:"セビリア", w:["グラナダ","コルドバ","トレド"], e:"大聖堂・アルカサル・インディアス古文書館が登録。"},
+    ]
+  },
+  africa:{
+    name:"アフリカ", ji:"🐘",
+    desc:"ピラミッド・セレンゲティ・ヴィクトリアの滝など",
+    pool:[
+      {q:"古代エジプト文明を象徴する、ギザにある巨大な墓建造物は？", a:"ギザのピラミッド", w:["王家の谷のみ","アブ・シンベル","カルナック神殿"], e:"「メンフィスとその墓地遺跡」の一部。スフィンクスも含む。"},
+      {q:"ラムセス2世が岩山を削って造り、ダム建設で移築されたエジプトの神殿は？", a:"アブ・シンベル神殿", w:["カルナック神殿","ルクソール神殿","フィラエ神殿のみ"], e:"アスワンハイダム建設に伴い高台へ移設された。"},
+      {q:"標高5,895mでアフリカ最高峰の、タンザニアの世界自然遺産は？", a:"キリマンジャロ国立公園", w:["ケニア山","ルウェンゾリ山地","シミエン国立公園"], e:"赤道近くにありながら山頂に氷河をいただく。"},
+      {q:"ヌーの大移動で知られる、タンザニアの大サバンナの国立公園は？", a:"セレンゲティ国立公園", w:["マサイマラ","クルーガー","アンボセリ"], e:"多くの野生動物が生息する草原地帯。"},
+      {q:"石造建築の遺跡で、国名の由来にもなったジンバブエの世界遺産は？", a:"グレート・ジンバブエ遺跡", w:["キルワ・キシワニ","ゲディ遺跡","アクスム"], e:"モルタルを使わない精巧な石積み建築。"},
+      {q:"ザンビアとジンバブエの国境にある、巨大な滝の世界遺産は？", a:"ヴィクトリアの滝（モシ・オ・トゥニャ）", w:["ナイアガラの滝","イグアスの滝","エンジェルフォール"], e:"現地語で「雷鳴とどろく水煙」の意。"},
+      {q:"岩を掘り抜いて造られた11の聖堂群である、エチオピアの世界遺産は？", a:"ラリベラの岩窟教会群", w:["アクスム","ゴンダール","ハラール旧市街"], e:"「アフリカのエルサレム」とも呼ばれる。"},
+      {q:"迷路のような旧市街と皮なめし工房で名高い、モロッコの古都は？", a:"フェズ旧市街", w:["マラケシュ","カサブランカ","ラバト"], e:"世界最古級の大学があるとされる学問の街。"},
+      {q:"泥（日干しレンガ）のモスクで知られる、マリのサハラ交易都市は？", a:"トンブクトゥ", w:["ガオ","バマコ","モプティ"], e:"サハラ交易とイスラム学問の中心地だった。"},
+      {q:"奴隷貿易の拠点となった「負の遺産」である、セネガルの島は？", a:"ゴレ島", w:["サン・ルイ島","ザンジバル島","モザンビーク島"], e:"大西洋奴隷貿易の歴史を伝える。"},
+      {q:"マンデラ元大統領が収監された、南アフリカの「負の遺産」の島は？", a:"ロベン島", w:["ゴレ島","ザンジバル島","モザンビーク島"], e:"アパルトヘイト闘争の象徴的な場所。"},
+      {q:"キツネザルなど固有種の宝庫である、マダガスカルの熱帯雨林は？", a:"アツィナナナの熱帯雨林", w:["ツィンギ","イサロ","アンボヒマンガ"], e:"危機遺産だったが2025年に危機リストを脱した。"},
+      {q:"フェニキア人が築いた古代の海洋国家の遺跡である、チュニジアの世界遺産は？", a:"カルタゴ遺跡", w:["ドゥッガ","エル・ジェム","ケルアン"], e:"ローマと覇を争った古代都市。"},
+      {q:"香料交易で栄えた、タンザニア沖の島の旧市街の世界遺産は？", a:"ストーン・タウン（ザンジバル）", w:["モンバサ","キルワ","ラム旧市街"], e:"アラブ・インド・アフリカ文化が融合した街。"},
+      {q:"内陸に広がる巨大な湿地帯（デルタ）である、ボツワナの世界自然遺産は？", a:"オカバンゴ・デルタ", w:["カラハリ砂漠","エトーシャ","チョベ"], e:"砂漠に消える川がつくる野生動物の楽園。"},
+      {q:"王家の谷やカルナック神殿がある、エジプトの古代都市の遺跡は？", a:"古代都市テーベとその墓地遺跡", w:["メンフィス","アレクサンドリア","アスワン"], e:"現在のルクソール。ナイル川東岸・西岸に広がる。"},
+      {q:"サハラ砂漠の先史時代の岩絵で名高い、アルジェリアの世界遺産は？", a:"タッシリ・ナジェール", w:["アハガル","フェザーン","アイル山地"], e:"数千年前の生活を描いた岩絵群。"},
+      {q:"「人類のゆりかご」と呼ばれ、初期人類の化石が多数出土した南アフリカの遺跡は？", a:"南アフリカの人類化石遺跡群", w:["オルドヴァイ峡谷","トゥルカナ湖","ブロークンヒル"], e:"スタークフォンテン洞窟などを含む。"},
+      {q:"マウンテンゴリラの生息地として知られる、コンゴ民主共和国の国立公園は？", a:"ヴィルンガ国立公園", w:["カフジ・ビエガ","サロンガ","オカピ野生生物保護区"], e:"アフリカ最古の国立公園。危機遺産でもある。"},
+      {q:"フラミンゴの大群で知られる、ケニアの湖群の世界自然遺産は？", a:"大地溝帯のケニアの湖群", w:["ヴィクトリア湖","タンガニーカ湖","チャド湖"], e:"ナクル湖などアルカリ湖に鳥が集まる。"},
+      {q:"初期キリスト教の聖地で、2025年に危機遺産リストを脱したエジプトの遺産は？", a:"アブー・メナー", w:["聖カトリーナ修道院","ワディ・ナトルン","アレクサンドリア"], e:"地下水位の問題を克服し危機リストを脱した。"},
+      {q:"フナ広場やクトゥビーヤ・モスクで知られる、モロッコの古都は？", a:"マラケシュ", w:["フェズ","メクネス","シャウエン"], e:"「バラ色の街」とも呼ばれる。"},
+    ]
+  },
+  americas:{
+    name:"南北アメリカ", ji:"🗿",
+    desc:"マチュ・ピチュ・ナスカ・イグアスの滝など",
+    pool:[
+      {q:"インカ帝国の「空中都市」と呼ばれる、ペルーの山中の遺跡は？", a:"マチュ・ピチュ", w:["クスコ市街のみ","ナスカ","オリャンタイタンボ"], e:"標高約2,400mに築かれた石造都市。"},
+      {q:"上空からしか全容が見えない、ペルーの砂漠に描かれた巨大な絵は？", a:"ナスカの地上絵", w:["マチュ・ピチュ","チャンチャン","パラカス"], e:"動物や幾何学模様が地表に描かれている。"},
+      {q:"ピラミッド「エル・カスティーヨ」で有名な、メキシコのマヤ遺跡は？", a:"チチェン・イッツァ", w:["ティカル","パレンケ","ウシュマル"], e:"春分・秋分に階段へ蛇の影が現れる。"},
+      {q:"間欠泉で有名な、1872年に指定された世界初の国立公園は？", a:"イエローストーン国立公園", w:["ヨセミテ","グランドキャニオン","グレイシャー"], e:"アメリカ。世界で最初の国立公園。"},
+      {q:"コロラド川が刻んだ巨大な峡谷である、アメリカの世界自然遺産は？", a:"グランド・キャニオン国立公園", w:["ザイオン","ブライスキャニオン","モニュメントバレー"], e:"何億年もの地層が露出する大峡谷。"},
+      {q:"フランスから贈られた、ニューヨーク港に立つ像の世界遺産は？", a:"自由の女神像", w:["リンカーン記念館","リバティ・ベル","エンパイアステートビル"], e:"アメリカ独立100周年を記念して贈られた。"},
+      {q:"ブラジルとアルゼンチンの国境にある、世界最大級の滝は？", a:"イグアスの滝", w:["ヴィクトリアの滝","ナイアガラの滝","エンジェルフォール"], e:"大小数百の滝が連なる大瀑布。"},
+      {q:"コルコバードの丘のキリスト像で有名な、ブラジルの都市景観は？", a:"リオデジャネイロの景観群", w:["サルバドール","ブラジリア","サンパウロ"], e:"山と海が織りなす独特の都市景観。"},
+      {q:"「太陽のピラミッド」で知られる、メキシコの古代都市遺跡は？", a:"テオティワカン", w:["チチェン・イッツァ","モンテ・アルバン","パレンケ"], e:"「神々の都」と呼ばれた巨大都市遺跡。"},
+      {q:"断崖に築かれた先住民プエブロの集合住宅跡である、アメリカの世界遺産は？", a:"メサ・ヴェルデ国立公園", w:["チャコ文化","タオス・プエブロ","カホキア"], e:"崖のくぼみに造られた石造住居群。"},
+      {q:"密林にそびえるマヤ文明の神殿ピラミッドで知られる、グアテマラの遺跡は？", a:"ティカル国立公園", w:["コパン","キリグア","パレンケ"], e:"熱帯雨林に埋もれた巨大都市。"},
+      {q:"独自の進化を遂げた生物が「進化論」に影響を与えた、エクアドルの諸島は？", a:"ガラパゴス諸島", w:["イースター島","フアン・フェルナンデス諸島","マルビナス諸島"], e:"ダーウィンが訪れ進化論の着想を得た。"},
+      {q:"巨大なモアイ像で知られる、チリ領の太平洋の孤島は？", a:"イースター島（ラパ・ヌイ国立公園）", w:["ガラパゴス諸島","フアン・フェルナンデス諸島","チロエ島"], e:"謎の多い人面石像が並ぶ。"},
+      {q:"かつて銀山で栄え「負の側面」も持つ、ボリビアの高地都市は？", a:"ポトシ市街", w:["スクレ","ラパス","オルロ"], e:"植民地時代に膨大な銀を産出した鉱山都市。"},
+      {q:"世界最長級の地下洞窟で知られる、アメリカ・ケンタッキー州の国立公園は？", a:"マンモス・ケーブ国立公園", w:["カールズバッド洞窟","ジュエル・ケーブ","ウィンド・ケーブ"], e:"総延長世界最長級の鍾乳洞。"},
+      {q:"バンフやジャスパーを含む、カナダのロッキー山脈の世界自然遺産は？", a:"カナディアン・ロッキー山脈自然公園群", w:["グロス・モーン","ナハニ","ウッドバッファロー"], e:"氷河湖と山岳の絶景が続く。"},
+      {q:"カリブ海に面した城塞都市の旧市街である、コロンビアの世界遺産は？", a:"カルタヘナ", w:["ボゴタ","メデジン","サンタ・マルタ"], e:"スペイン植民地時代の要塞が残る港町。"},
+      {q:"巨大氷河ペリト・モレノで知られる、アルゼンチンの国立公園は？", a:"ロス・グラシアレス国立公園", w:["ナウエル・ワピ","イグアス","イスチグアラスト"], e:"パタゴニアの氷河が崩れ落ちる景観。"},
+      {q:"キラウエア火山で知られる、アメリカ・ハワイの世界自然遺産は？", a:"ハワイ火山国立公園", w:["ハレアカラ","デナリ","レーニア山"], e:"活火山の噴火活動を間近で見られる。"},
+      {q:"チムー王国の都で、世界最大級の日干しレンガ都市遺跡である、ペルーの世界遺産は？", a:"チャン・チャン遺跡地帯", w:["カラル","パチャカマック","クエラップ"], e:"砂漠に広がる巨大な土の都市跡。"},
+      {q:"カラフルな街並みと銀鉱山で知られる、メキシコの歴史都市は？", a:"グアナファト歴史地区", w:["オアハカ","プエブラ","サカテカス"], e:"独立運動ゆかりの街としても有名。"},
+      {q:"恐竜化石の一大産地として知られる、カナダ・アルバータ州の州立公園は？", a:"恐竜州立公園", w:["バンフ","ジャスパー","グロス・モーン"], e:"白亜紀の恐竜化石が多数発見された。"},
+    ]
+  },
+  oceania:{
+    name:"オセアニア", ji:"🦘",
+    desc:"ウルル・グレートバリアリーフ・シドニーなど",
+    pool:[
+      {q:"オーストラリア中央部にある、先住民の聖地とされる巨大な一枚岩は？", a:"ウルル（エアーズロック）", w:["カタ・ジュタのみ","キングス・キャニオン","マウント・オーガスタ"], e:"「ウルル・カタ・ジュタ国立公園」の複合遺産。"},
+      {q:"オーストラリア北東岸に広がる、世界最大のサンゴ礁は？", a:"グレート・バリア・リーフ", w:["ニンガルー・リーフ","珊瑚海諸島","バス海峡"], e:"宇宙からも見える巨大なサンゴ礁。"},
+      {q:"ミルフォード・サウンドを含む、ニュージーランド南島の世界自然遺産は？", a:"テ・ワヒポウナム（南西ニュージーランド）", w:["トンガリロ","フィヨルドランドのみ","アオラキ単独"], e:"氷河が削ったフィヨルドと山岳。"},
+      {q:"マオリの聖地でもある、ニュージーランドの火山地帯の国立公園は？", a:"トンガリロ国立公園", w:["フィヨルドランド","アオラキ／マウント・クック","エグモント"], e:"文化的景観を持つ複合遺産の先駆け。"},
+      {q:"19世紀の囚人流刑地に関する、オーストラリアの「負の遺産」は？", a:"オーストラリアの囚人遺跡群", w:["ロットネスト島","フリーマントル刑務所のみ","ノーフォーク島のみ"], e:"大英帝国の流刑の歴史を伝える。"},
+      {q:"先住民の岩絵と湿地の生態系で知られる、オーストラリア北部の複合遺産は？", a:"カカドゥ国立公園", w:["ウルル","パーヌルル","ブルーマウンテンズ"], e:"アボリジニの文化と豊かな自然が評価。"},
+      {q:"ジュゴンや世界最古級の生命の痕跡ストロマトライトで知られる、西部の湾は？", a:"シャーク湾", w:["ニンガルー","エクスマウス","ロットネスト"], e:"オーストラリア西岸。生きた化石が残る。"},
+      {q:"貝殻のような屋根で知られる、シドニーの20世紀建築の世界遺産は？", a:"シドニー・オペラハウス", w:["ハーバーブリッジ","クイーンビクトリアビル","セントメアリー大聖堂"], e:"20世紀を代表する建築作品。"},
+      {q:"玄武岩で築かれた海上の古代都市遺跡である、ミクロネシアの世界遺産は？", a:"ナン・マドール", w:["レラ遺跡","ヤップ島の石貨","チューク環礁"], e:"「太平洋のベニス」とも呼ばれる。"},
+      {q:"世界最大級の砂の島である、オーストラリアの世界自然遺産は？", a:"カ・ガリ（フレーザー島）", w:["ロットネスト島","カンガルー島","ストラドブローク島"], e:"砂でできた島に淡水湖や原生林が広がる。"},
+      {q:"ユーカリの精油が生む青い霞で知られる、オーストラリアの山岳地帯は？", a:"グレーター・ブルー・マウンテンズ", w:["グランピアンズ","スノーウィー山地","ダンデノン丘陵"], e:"シドニー近郊の広大なユーカリ林。"},
+      {q:"南太平洋最大級の隆起サンゴ環礁である、ソロモン諸島の自然遺産は？", a:"東レンネル", w:["マライタ島","ガダルカナル島","サンタイサベル島"], e:"世界最大級のサンゴ礁の隆起環礁。"},
+      {q:"多様な海洋生物を育む、フランス領ニューカレドニアのサンゴ礁の潟は？", a:"ニューカレドニアのラグーン", w:["タヒチの礁湖","フィジー諸島","バヌアツ"], e:"世界有数のサンゴ礁のラグーン。"},
+      {q:"古代ゴンドワナ大陸の名残をとどめる、オーストラリア東海岸の雨林は？", a:"オーストラリアのゴンドワナ雨林", w:["デインツリー熱帯雨林のみ","タスマニア原生地域","アルプス地帯"], e:"生きた化石植物や固有種が残る。"},
+      {q:"手つかずの原生自然が広がる、オーストラリア・タスマニア島の世界遺産は？", a:"タスマニア原生地域", w:["カカドゥ","ブルーマウンテンズ","フレーザー島"], e:"氷河地形と固有の動植物が残る。"},
+      {q:"世界最古級の農耕の痕跡が残る、パプアニューギニアの世界遺産は？", a:"クックの初期農耕遺跡", w:["セピック川流域","ラバウル","トロブリアンド諸島"], e:"数千年前の灌漑農耕の跡が発見された。"},
+      {q:"海鳥やアザラシの繁殖地で、野生生物の宝庫である、ニュージーランドの島々は？", a:"ニュージーランドの亜南極諸島", w:["チャタム諸島","スチュアート島","ケルマデック諸島"], e:"人の影響が少ない亜南極の生態系。"},
+      {q:"有袋類など古代哺乳類の化石が多数見つかった、オーストラリアの自然遺産は？", a:"オーストラリアの哺乳類化石地帯", w:["ウィランドラ湖群のみ","シャーク湾のみ","カカドゥ"], e:"リバースリーなど。哺乳類進化を伝える化石地。"},
+    ]
+  },
+};
+
+const ORDER = ['japan','asia','europe','africa','americas','oceania'];
+const OMAKASE = { name:"お任せ出題（全ジャンル）", ji:"🎲", desc:"全ジャンルからランダムに10問を出題！" };
+
+/* ---------- ジャンル情報ヘルパー ---------- */
+function genreInfo(key){ return key==='omakase' ? OMAKASE : QUIZ[key]; }
+function genrePool(key){
+  if(key==='omakase'){
+    let all=[];
+    ORDER.forEach(k=>{ all=all.concat(QUIZ[k].pool); });
+    return all;
+  }
+  return QUIZ[key].pool;
+}
+
+/* ---------- 状態 ---------- */
+let curGenre=null, pendingGenre=null;
+let questions=[], idx=0, score=0, correctCount=0, wrongList=[], timeLeft=START_TIME;
+let timerId=null, typingTimeout=null, fullQText='', answered=false;
+let lastResult=null, reviewIdx=0;
+
+/* ---------- ジャンルカード（クリックで即スタート） ---------- */
+function buildGenreCards(){
+  const grid=document.getElementById('genreGrid');
+  grid.innerHTML='';
+  ORDER.forEach(key=>{
+    const g=QUIZ[key];
+    const card=document.createElement('div');
+    card.className='gcard';
+    card.onclick=()=>startGame(key);   /* ← モーダルを挟まず即スタート */
+    card.innerHTML=`<div class="ji">${g.ji}</div><div class="nm">${g.name}</div><div class="ct">全${g.pool.length}問から出題</div>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ---------- 確認モーダル（最後の確認：お任せ出題で使用） ---------- */
+function openModal(key){
+  pendingGenre=key;
+  const g=genreInfo(key);
+  document.getElementById('modalJi').textContent=g.ji;
+  document.getElementById('modalName').textContent=g.name;
+  document.getElementById('modalDesc').textContent=g.desc;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');pendingGenre=null;}
+function confirmStart(){
+  const key=pendingGenre;
+  document.getElementById('modalBg').classList.remove('show');
+  if(key) startGame(key);
+}
+
+/* ---------- ユーティリティ ---------- */
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- ゲーム開始 ---------- */
+function startGame(key){
+  curGenre=key;
+  const pool=genrePool(key);
+  questions=shuffle(pool).slice(0,Math.min(TOTAL_Q,pool.length));
+  idx=0;score=0;correctCount=0;wrongList=[];timeLeft=START_TIME;
+  document.getElementById('hudScore').textContent='0';
+  showScreen('quiz');
+  startTimer();
+  renderQuestion();
+}
+
+/* ---------- タイマー ---------- */
+function startTimer(){
+  clearInterval(timerId);
+  updateTimeUI();
+  timerId=setInterval(()=>{
+    timeLeft--;
+    if(timeLeft<=0){timeLeft=0;updateTimeUI();endGame();return;}
+    updateTimeUI();
+  },1000);
+}
+function updateTimeUI(){
+  document.getElementById('hudTime').textContent=timeLeft;
+  const pct=Math.max(0,Math.min(100,(timeLeft/START_TIME)*100));
+  document.getElementById('timeFill').style.width=pct+'%';
+  const pill=document.getElementById('timePill');
+  if(timeLeft<=10)pill.classList.add('warn');else pill.classList.remove('warn');
+}
+
+/* ---------- 出題（タイプライター＋早押し） ---------- */
+function renderQuestion(){
+  answered=false;
+  const q=questions[idx];
+  document.getElementById('qTag').textContent=genreInfo(curGenre).name;
+  document.getElementById('qType').textContent='4択問題';
+  document.getElementById('progress').textContent=`第 ${idx+1} 問 / ${questions.length}`;
+
+  // 選択肢を完全にリセット（前問の色付き太枠線を残さない）
+  const box=document.getElementById('choices');
+  box.classList.remove('show');
+  box.className='choices';
+  box.innerHTML='';
+  document.getElementById('buzzWrap').style.display='block';
+
+  // タイプライター開始
+  typeQuestion(q.q);
+}
+function typeQuestion(text){
+  clearTimeout(typingTimeout);
+  fullQText=text;
+  const el=document.getElementById('qText');
+  el.classList.remove('fade-out','done');
+  el.textContent='';
+  let i=0;
+  (function step(){
+    el.textContent=text.slice(0,i);
+    if(i<text.length){i++;typingTimeout=setTimeout(step,TYPING_SPEED);}
+    else{el.classList.add('done');}
+  })();
+}
+
+/* 「回答する！」→ タイプ停止 → 問題文フェードアウト → 選択肢表示 */
+function buzz(){
+  if(answered)return;
+  clearTimeout(typingTimeout);
+  const el=document.getElementById('qText');
+  el.classList.add('fade-out');
+  document.getElementById('buzzWrap').style.display='none';
+
+  buildChoices(questions[idx]);
+  setTimeout(()=>{
+    const box=document.getElementById('choices');
+    box.style.display='grid';
+    void box.offsetWidth;
+    box.classList.add('show');
+  },280);
+}
+function buildChoices(q){
+  const box=document.getElementById('choices');
+  box.innerHTML='';box.className='choices';
+  // {text,correct} を作りシャッフル（正解位置の偏り防止）
+  let opts=[{text:q.a,correct:true}].concat(q.w.map(w=>({text:w,correct:false})));
+  opts=shuffle(opts);
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='choice';       /* 常に素の状態で生成（前問のcorrect/wrong枠は持ち越さない） */
+    b.type='button';
+    b.textContent=o.text;
+    b.onclick=()=>pick(b,o.correct,q);
+    box.appendChild(b);
+  });
+}
+
+/* ---------- 解答処理 ---------- */
+function pick(btn,isCorrect,q){
+  if(answered)return;
+  answered=true;
+  clearInterval(timerId); // オーバーレイ閲覧中はタイマー停止
+
+  const buttons=document.querySelectorAll('#choices .choice');
+  buttons.forEach(b=>b.disabled=true);
+  if(btn&&btn.blur)btn.blur();
+  if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+  const correctText=q.a;
+
+  if(isCorrect){
+    score+=10;correctCount++;
+    timeLeft=Math.min(MAX_TIME,timeLeft+5);
+    btn.classList.add('correct');
+    document.getElementById('hudScore').textContent=score;
+    updateTimeUI();
+    showToast(true,'✅ 正解！','+10点　時間 +5秒　⏱');
+  }else{
+    timeLeft=Math.max(0,timeLeft-5);
+    btn.classList.add('wrong');
+    buttons.forEach(b=>{
+      if(b.textContent===q.a)b.classList.add('correct');
+    });
+    updateTimeUI();
+    showToast(false,'❌ 不正解',`正解は「${q.a}」（時間 −5秒）`);
+    wrongList.push({ q:q.q, yours:btn.textContent, correct:correctText, e:q.e||'' });
+  }
+
+  // 問題文を全文でフェードイン再表示
+  const el=document.getElementById('qText');
+  el.classList.remove('fade-out');
+  el.classList.add('done');
+  el.textContent=fullQText;
+
+  // 0.6秒後に正誤オーバーレイ
+  setTimeout(()=>showResultOverlay(isCorrect,q,correctText),600);
+}
+
+/* ---------- 正誤オーバーレイ ---------- */
+function showResultOverlay(isCorrect,q,correctText){
+  const ov=document.getElementById('resultOverlay');
+  const card=document.getElementById('roCard');
+  card.className='ro-card '+(isCorrect?'ok':'ng');
+  document.getElementById('roMark').textContent=isCorrect?'◯':'✕';
+  document.getElementById('roHead').textContent=isCorrect?'正解！':'残念…';
+  document.getElementById('roAns').innerHTML=`正解<b>${escapeHtml(correctText)}</b>`;
+  const ex=document.getElementById('roExplain');
+  if(q.e){ex.style.display='block';ex.innerHTML='💡 '+escapeHtml(q.e);}
+  else{ex.style.display='none';}
+  ov.classList.add('show');
+}
+
+/* 「次の問題へ」→ 押した瞬間にトーストを消す */
+function nextQuestion(){
+  hideToast();
+  document.getElementById('resultOverlay').classList.remove('show');
+  idx++;
+  if(idx>=questions.length || timeLeft<=0){
+    endGame();
+  }else{
+    startTimer();      // 停止していたタイマーを再開
+    renderQuestion();
+  }
+}
+
+/* ---------- トースト ---------- */
+function showToast(ok,big,small){
+  const t=document.getElementById('toast');
+  t.className='toast '+(ok?'ok':'ng');
+  document.getElementById('toastBig').textContent=big;
+  document.getElementById('toastSmall').textContent=small;
+  void t.offsetWidth;
+  t.classList.add('show');
+}
+function hideToast(){document.getElementById('toast').classList.remove('show');}
+
+/* ---------- 終了・結果 ---------- */
+function endGame(){
+  clearInterval(timerId);
+  clearTimeout(typingTimeout);
+  hideToast();
+  document.getElementById('resultOverlay').classList.remove('show');
+
+  const base=correctCount*10;
+  const bonus=timeLeft;
+  const total=base+bonus;
+  const hanamaru=(total>=HANAMARU_SCORE);   /* 花丸：スコア100点以上 */
+  lastResult={genre:curGenre,total,base,bonus,correct:correctCount,saved:false,hanamaru,stamped:false};
+
+  document.getElementById('resGenre').textContent='【'+genreInfo(curGenre).name+'】';
+  document.getElementById('resTotal').textContent=total;
+  document.getElementById('resCorrect').textContent=correctCount;
+  document.getElementById('resBase').textContent=base;
+  document.getElementById('resBonus').textContent=bonus;
+
+  const badge=document.getElementById('resBadge');
+  let label,bg,col;
+  if(correctCount>=10){label='🏆 世界遺産マスター！全問正解';bg='linear-gradient(135deg,#ffce3a,#e0a91f)';col='#2a1f04';}
+  else if(correctCount>=8){label='🌏 世界遺産ソムリエ';bg='linear-gradient(135deg,#ff0033,#c20026)';col='#fff';}
+  else if(correctCount>=6){label='🗺️ なかなかの旅通';bg='rgba(255,0,51,.18)';col='#ff6b86';}
+  else if(correctCount>=4){label='🧳 これから世界を巡ろう';bg='rgba(255,255,255,.1)';col='#ece6e9';}
+  else{label='🌱 まずは基礎から！';bg='rgba(255,255,255,.06)';col='#b3a9af';}
+  badge.textContent=label;badge.style.background=bg;badge.style.color=col;
+
+  document.getElementById('reviewBtn').style.display=wrongList.length?'block':'none';
+  document.getElementById('saveBtn').disabled=false;
+  document.getElementById('saveBtn').textContent='📥 ランキングに登録';
+
+  // 花丸スタンプ（スコア100点以上）
+  const hm=document.getElementById('hanamaru');
+  if(hanamaru){
+    if(hm)hm.style.display='block';
+    // ポータル登録名が既にあれば終了時に自動送信（重複防止）
+    if(window.TomyStamp && TomyStamp.getPlayer() && !lastResult.stamped){
+      lastResult.stamped=true;
+      try{TomyStamp.send(STAMP_GAME_ID,genreInfo(curGenre).name,correctCount);}catch(e){}
+    }
+  }else{
+    if(hm)hm.style.display='none';
+  }
+  // 登録名欄に既存のポータル名を自動入力
+  try{
+    const pn=document.getElementById('playerName');
+    if(window.TomyStamp && pn && !pn.value){const sv=TomyStamp.getPlayer();if(sv)pn.value=sv;}
+  }catch(e){}
+
+  showScreen('result');
+}
+
+/* ---------- スコア保存（ローカル） ---------- */
+function loadRanking(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{};}
+  catch(e){return {};}
+}
+function saveScore(){
+  if(!lastResult||lastResult.saved)return;
+  let name=document.getElementById('playerName').value.trim();
+  if(!name)name='名無しの旅人';
+  const data=loadRanking();
+  if(!data[lastResult.genre])data[lastResult.genre]=[];
+  const d=new Date();
+  const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
+  data[lastResult.genre].push({name,score:lastResult.total,correct:lastResult.correct,date:dateStr});
+  data[lastResult.genre].sort((a,b)=>b.score-a.score);
+  data[lastResult.genre]=data[lastResult.genre].slice(0,50);
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}
+  // ポータル花丸ランキングへ反映（スコア100点以上のとき）
+  try{
+    if(window.TomyStamp){
+      TomyStamp.setPlayer(name);
+      if(lastResult.hanamaru && !lastResult.stamped){
+        lastResult.stamped=true;
+        TomyStamp.send(STAMP_GAME_ID,genreInfo(lastResult.genre).name,lastResult.correct);
+      }
+    }
+  }catch(e){}
+  lastResult.saved=true;
+  document.getElementById('saveBtn').textContent='✅ 登録しました';
+  document.getElementById('saveBtn').disabled=true;
+  setTimeout(()=>showRanking(lastResult.genre),500);
+}
+
+/* ---------- 復習 ---------- */
+function showReview(){reviewIdx=0;renderReview();showScreen('review');}
+function renderReview(){
+  const card=document.getElementById('reviewCard');
+  if(wrongList.length===0){
+    card.innerHTML=`<div class="perfect-msg">🎉<br>間違いはありませんでした！<br>お見事、世界遺産マスター！</div>`;
+    return;
+  }
+  const w=wrongList[reviewIdx];
+  card.innerHTML=`
+    <div class="review-head">
+      <span class="ttl">📖 間違えた問題</span>
+      <span class="count">${reviewIdx+1} / ${wrongList.length}</span>
+    </div>
+    <div class="review-q">${escapeHtml(w.q)}</div>
+    <div class="ans-block">
+      <div class="ans-line yours"><span class="lab">あなたの解答</span><span class="val">${escapeHtml(w.yours)}</span></div>
+      <div class="ans-line right"><span class="lab">正解</span><span class="val">${escapeHtml(w.correct)}</span></div>
+    </div>
+    ${w.e?`<div class="explain">💡 ${escapeHtml(w.e)}</div>`:''}
+    <div class="review-nav">
+      <button class="btn btn-ghost" onclick="prevReview()" ${reviewIdx===0?'disabled style=opacity:.4':''}>‹ 前へ</button>
+      <button class="btn btn-ghost" onclick="nextReview()" ${reviewIdx===wrongList.length-1?'disabled style=opacity:.4':''}>次へ ›</button>
+    </div>`;
+}
+function prevReview(){if(reviewIdx>0){reviewIdx--;renderReview();}}
+function nextReview(){if(reviewIdx<wrongList.length-1){reviewIdx++;renderReview();}}
+function backToResult(){showScreen('result');}
+
+/* ---------- ランキング画面 ---------- */
+let curRankTab=null;
+const RANK_KEYS = ORDER.concat(['omakase']);
+function showRanking(focusGenre){
+  buildRankTabs();
+  curRankTab=focusGenre||ORDER[0];
+  renderRankList();
+  showScreen('ranking');
+}
+function buildRankTabs(){
+  const tabs=document.getElementById('rankTabs');
+  tabs.innerHTML='';
+  RANK_KEYS.forEach(key=>{
+    const b=document.createElement('button');
+    b.className='tab';
+    b.textContent=(key==='omakase'?'お任せ':genreInfo(key).name);
+    b.dataset.key=key;
+    b.onclick=()=>{curRankTab=key;renderRankList();};
+    tabs.appendChild(b);
+  });
+}
+function renderRankList(){
+  document.querySelectorAll('#rankTabs .tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.key===curRankTab);
+  });
+  const data=loadRanking();
+  const list=document.getElementById('rankList');
+  const arr=(data[curRankTab]||[]).slice(0,10);
+  if(arr.length===0){
+    list.innerHTML=`<div class="rank-empty">まだ記録がありません。<br>「${genreInfo(curRankTab).name}」に挑戦してみましょう！</div>`;
+    return;
+  }
+  list.innerHTML='';
+  arr.forEach((r,i)=>{
+    const li=document.createElement('li');
+    if(i<3)li.classList.add('top'+(i+1));
+    const medal=['🥇','🥈','🥉'][i]||(i+1);
+    li.innerHTML=`<span class="pos">${medal}</span>
+      <span class="nm">${escapeHtml(r.name)}</span>
+      <span class="dt">${r.date||''}</span>
+      <span class="sc">${r.score}点</span>`;
+    list.appendChild(li);
+  });
+}
+function clearRanking(){
+  if(confirm('この端末に保存されたランキングをすべて消去します。よろしいですか？')){
+    try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+    renderRankList();
+  }
+}
+
+/* ---------- 画面遷移 ---------- */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goTitle(){clearInterval(timerId);clearTimeout(typingTimeout);hideToast();document.getElementById('resultOverlay').classList.remove('show');showScreen('title');}
+function retrySame(){if(curGenre)startGame(curGenre);}
+function quitGame(){
+  if(confirm('クイズをやめてトップに戻りますか？（このプレイのスコアは記録されません）')){
+    clearInterval(timerId);clearTimeout(typingTimeout);hideToast();
+    document.getElementById('resultOverlay').classList.remove('show');
+    showScreen('title');
+  }
+}
+
+/* ---------- canvas 背景（動的リサイズ） ---------- */
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+const GLYPHS=['🏛️','⛩️','🗿','🕌','🏯','🗼','🌏','🌍','⛰️','🐘','🦘','★','◆','▲'];
+const NEON=['255,0,51','255,206,58','255,107,134'];
+let drops=[],dpr=1;
+function resizeCanvas(){
+  dpr=window.devicePixelRatio||1;
+  canvas.width=Math.floor(window.innerWidth*dpr);
+  canvas.height=Math.floor(window.innerHeight*dpr);
+  canvas.style.width=window.innerWidth+'px';
+  canvas.style.height=window.innerHeight+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const count=Math.max(12,Math.floor(window.innerWidth/40));
+  drops=[];
+  for(let i=0;i<count;i++){
+    drops.push({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      size:14+Math.random()*22,
+      spd:.15+Math.random()*.5,
+      ch:GLYPHS[Math.floor(Math.random()*GLYPHS.length)],
+      col:NEON[Math.floor(Math.random()*NEON.length)],
+      a:.05+Math.random()*.12
+    });
+  }
+}
+function drawBg(){
+  ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+  drops.forEach(d=>{
+    ctx.font=`${d.size}px 'Noto Sans JP', sans-serif`;
+    ctx.fillStyle=`rgba(${d.col},${d.a})`;
+    ctx.shadowColor=`rgba(${d.col},${d.a*2})`;
+    ctx.shadowBlur=10;
+    ctx.fillText(d.ch,d.x,d.y);
+    ctx.shadowBlur=0;
+    d.y+=d.spd;
+    if(d.y>window.innerHeight+d.size){
+      d.y=-d.size;d.x=Math.random()*window.innerWidth;
+      d.ch=GLYPHS[Math.floor(Math.random()*GLYPHS.length)];
+      d.col=NEON[Math.floor(Math.random()*NEON.length)];
+    }
+  });
+  requestAnimationFrame(drawBg);
+}
+let resizeTO;
+window.addEventListener('resize',()=>{clearTimeout(resizeTO);resizeTO=setTimeout(resizeCanvas,120);});
+window.addEventListener('orientationchange',()=>setTimeout(resizeCanvas,200));
+
+/* ---------- 起動 ---------- */
+buildGenreCards();
+resizeCanvas();
+drawBg();
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+</script>
+</body>
+</html>
