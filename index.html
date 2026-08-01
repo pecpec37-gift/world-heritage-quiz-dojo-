@@ -358,7 +358,7 @@
         <li>問題が流れたら <b>「回答する！」</b> → 4つの選択肢が出現！</li>
         <li>制限時間は <b>30秒</b>。残った時間はそのまま <b>ボーナス点</b> に！</li>
         <li>正解 → <b>+10点 ＆ 時間+5秒</b>（「✅ 正解！ +5秒」）</li>
-        <li>不正解 → <b>減点なし・時間−5秒</b>（正解を表示）</li>
+        <li>不正解 → <b>減点なし・時間ペナルティなし</b>（正解を表示）</li>
         <li>終了後は <b>間違えた問題を1問ずつ復習</b> できます</li>
         <li>スコア <b>100点以上で🌸花丸スタンプ</b>（ポータルのランキングに反映）</li>
         <li>スコアは端末内ランキングに記録（ローカル保存・共有なし）</li>
@@ -504,7 +504,7 @@
    - 4択クイズ / 10問ランダム出題（全体150問以上のバックボーン）
    - タイプライター → 回答する！ → 選択肢 → 色付け → 問題文フェードイン
      → 0.6秒後に正誤オーバーレイ → 次の問題へでトースト消去
-   - 30秒 + 残り時間ボーナス / 正解+10点+5秒 / 不正解-5秒
+   - 30秒 + 残り時間ボーナス / 正解+10点+5秒 / 不正解ペナルティなし
    - 4択は表示時にシャッフル（正解位置の偏り防止）
    - ジャンルカードはクリックで即スタート（お任せのみ最後の確認モーダル）
    - スコア100点以上で花丸スタンプ → ポータルのランキングへ反映
@@ -886,15 +886,13 @@ function pick(btn,isCorrect,q){
     btn.classList.add('correct');
     document.getElementById('hudScore').textContent=score;
     updateTimeUI();
-    showToast(true,'✅ 正解！','+10点　時間 +5秒　⏱');
+    showToast(true,'✅ 正解！','＋5秒　⏱　+10点');
   }else{
-    timeLeft=Math.max(0,timeLeft-5);
     btn.classList.add('wrong');
     buttons.forEach(b=>{
       if(b.textContent===q.a)b.classList.add('correct');
     });
-    updateTimeUI();
-    showToast(false,'❌ 不正解',`正解は「${q.a}」（時間 −5秒）`);
+    showToast(false,'❌ 不正解',`正解は「${q.a}」`);
     wrongList.push({ q:q.q, yours:btn.textContent, correct:correctText, e:q.e||'' });
   }
 
