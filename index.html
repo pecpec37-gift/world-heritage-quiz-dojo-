@@ -331,6 +331,18 @@
   @media(max-width:360px){
     .hud .pill{padding:7px 11px;}
   }
+
+  /* ===== 学習メニュー ===== */
+  .lcard::after{content:"クリックで学習 →";}
+  .study-intro{background:linear-gradient(135deg,rgba(255,0,51,.10),rgba(255,206,58,.06));border:1px solid rgba(255,0,51,.30);border-radius:14px;padding:16px 18px;margin:0 0 16px;font-size:14px;line-height:1.85;color:#ece6e9;box-shadow:0 6px 22px var(--shadow);}
+  .study-genre-head{display:flex;align-items:center;gap:12px;justify-content:center;margin:8px 0 16px;text-align:center;}
+  .study-genre-head .ji{font-size:clamp(30px,8vw,44px);line-height:1;filter:drop-shadow(0 2px 10px rgba(255,0,51,.35));}
+  .study-genre-head .nm{font-weight:900;font-size:clamp(18px,5vw,24px);color:var(--white);}
+  .lpoint{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.10);border-left:4px solid var(--red);border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 16px var(--shadow);}
+  .lpoint .lh{display:flex;align-items:flex-start;gap:9px;font-weight:900;font-size:15px;color:var(--gold-soft);line-height:1.5;}
+  .lpoint .lh .no{flex:none;min-width:25px;height:25px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:900;}
+  .lpoint .lb{margin-top:8px;font-size:14px;line-height:1.9;color:#ece6e9;}
+  .study-actions{margin-top:18px;display:flex;flex-direction:column;gap:10px;}
 </style>
 </head>
 <body>
@@ -365,6 +377,8 @@
       </ul>
       <div class="tap-hint"><span>▶ ジャンルを選ぶとクリックで即スタート！</span></div>
     </div>
+
+    <div style="text-align:center;margin:0 0 6px;"><button class="btn btn-crimson" style="width:100%;max-width:520px;" onclick="openStudy()">📖 学習メニュー（概要と解説を読む）</button></div>
 
     <div class="section-label">ジャンルを選ぶ</div>
     <div class="genres" id="genreGrid"></div>
@@ -461,6 +475,31 @@
     <div class="footer-row" style="gap:10px;flex-wrap:wrap;">
       <button class="btn btn-ghost" onclick="goTitle()">🏠 トップへ戻る</button>
       <button class="btn btn-ghost" onclick="clearRanking()">🗑 この記録を消去</button>
+    </div>
+  </section>
+
+  <!-- ============ STUDY (list) ============ -->
+  <section id="screen-study" class="screen">
+    <div class="crest" style="margin-top:36px;">
+      <div class="seal">学習メニュー</div>
+      <h1 style="font-size:clamp(26px,7vw,40px);">📖 <span class="yt">世界遺産</span>を<span class="dojo">学ぶ</span></h1>
+      <div class="subtitle">読んで学べる 概要と解説。<br>ジャンルを選んで知識を深めよう。</div>
+    </div>
+    <div class="section-label">ジャンルを選ぶ</div>
+    <div class="genres" id="studyGrid"></div>
+    <div class="top-actions" style="grid-template-columns:1fr;margin-top:16px;">
+      <button class="btn btn-ghost" onclick="goTitle()">🏠 トップへ戻る</button>
+    </div>
+  </section>
+
+  <!-- ============ STUDY (detail) ============ -->
+  <section id="screen-studyDetail" class="screen">
+    <div class="study-genre-head"><span class="ji" id="studyJi">🗾</span><span class="nm" id="studyName">ジャンル</span></div>
+    <div id="studyBody"></div>
+    <div class="study-actions">
+      <button class="btn btn-gold" id="studyQuizBtn">🎯 このジャンルのクイズに挑戦</button>
+      <button class="btn btn-ghost" onclick="openStudy()">‹ 学習メニューへ戻る</button>
+      <button class="btn btn-ghost" onclick="goTitle()">🏠 トップへ戻る</button>
     </div>
   </section>
 
@@ -1115,6 +1154,7 @@ function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
   window.scrollTo(0,0);
+  if(typeof resizeCanvas==='function') requestAnimationFrame(resizeCanvas);
 }
 function goTitle(){clearInterval(timerId);clearTimeout(typingTimeout);hideToast();document.getElementById('resultOverlay').classList.remove('show');showScreen('title');}
 function retrySame(){if(curGenre)startGame(curGenre);}
@@ -1176,7 +1216,38 @@ window.addEventListener('resize',()=>{clearTimeout(resizeTO);resizeTO=setTimeout
 window.addEventListener('orientationchange',()=>setTimeout(resizeCanvas,200));
 
 /* ---------- 起動 ---------- */
+/* ---------- 学習メニュー ---------- */
+const STUDY = {"japan": {"intro": "日本の世界遺産は文化21件・自然5件の計26件（2025年時点）。最初の登録から最新の登録まで、地域や見どころを押さえましょう（登録は年々増えるため、最新は公式で確認を）。", "points": [{"h": "日本初の世界遺産（1993年）", "b": "1993年に、法隆寺地域の仏教建造物・姫路城（文化）と、屋久島・白神山地（自然）の計4件が日本で初めて登録されました。法隆寺は、現存する世界最古級の木造建築を含みます。"}, {"h": "城と古都", "b": "「白鷺城」姫路城のほか、清水寺など17件で構成される「古都京都の文化財」（1994年）、東大寺の大仏で知られる「古都奈良の文化財」（1998年）など、歴史都市の遺産が並びます。"}, {"h": "自然遺産は5件", "b": "屋久島・白神山地（1993年）、知床（2005年・北海道）、小笠原諸島（2011年・東京）、奄美大島/徳之島/沖縄島北部/西表島（2021年）。固有種や生態系の豊かさが評価されています。"}, {"h": "信仰と祈りの遺産", "b": "海上の大鳥居で名高い厳島神社（1996年）、熊野・高野山への「紀伊山地の霊場と参詣道」（2004年）、禁教下の「長崎と天草地方の潜伏キリシタン関連遺産」（2018年）など。"}, {"h": "産業革命の遺産", "b": "富岡製糸場（2014年・群馬）、軍艦島を含む「明治日本の産業革命遺産」（2015年）、石見銀山（2007年・島根）、そして2024年登録の「佐渡島の金山」（新潟）など、近代化・鉱業の歴史も。"}, {"h": "負の遺産・平和", "b": "原爆ドーム（1996年・広島）は、核兵器の惨禍と恒久平和を訴える「負の遺産」。人類が記憶すべき歴史を今に伝えます。"}, {"h": "富士山と古代遺跡", "b": "富士山（2013年）は「信仰の対象と芸術の源泉」として“自然”ではなく“文化”遺産に。ほかに百舌鳥・古市古墳群（2019年）、北海道・北東北の縄文遺跡群（2021年）も。※飛鳥・藤原の宮都が登録勧告を受けています（2026年審議予定）。"}]}, "asia": {"intro": "アンコール・万里の長城・タージ・マハルなど、アジアには壮大な文明の遺産が集まります。国と見どころをセットで押さえましょう。", "points": [{"h": "東南アジアの巨大寺院", "b": "カンボジアのアンコール・ワット（クメール王朝の石造寺院）、木の根が絡むタ・プローム、インドネシア・ジャワ島の世界最大級の仏教遺跡ボロブドゥールなど。"}, {"h": "中国の大遺産", "b": "北方防衛の万里の長城、秦の始皇帝陵の兵馬俑、明・清の宮殿・故宮（紫禁城）。柱状の奇峰が林立する武陵源（張家界）などの自然遺産もあります。"}, {"h": "インドの遺産", "b": "白大理石の霊廟タージ・マハル（アーグラ）、仏教壁画のアジャンター石窟群、官能的な彫刻のカジュラーホ、太陽神の馬車を模したコナーラクのスーリヤ寺院など。"}, {"h": "中東の遺跡", "b": "ヨルダンの「バラ色の都市」ペトラ、アケメネス朝ペルシアの都ペルセポリス（イラン）、サウジアラビア初の世界遺産ヘグラ（ナバテア文明）など。"}, {"h": "トルコの絶景", "b": "奇岩と洞窟教会のカッパドキア（ギョレメ）、真っ白な石灰棚「綿の城」パムッカレなど、独特の景観が世界遺産になっています。"}, {"h": "仏教文化の古都", "b": "タイのアユタヤ、ミャンマーの仏塔群バガン、ラオスのルアン・パバン、スリランカの岩上の王宮シギリヤなど、祈りの町が各地に残ります。"}, {"h": "アジアの自然遺産", "b": "「シベリアの真珠」バイカル湖（世界最深・最古の湖）、奇岩が浮かぶベトナムのハロン湾、世界最大級の大トカゲが棲むインドネシアのコモド国立公園など。"}]}, "europe": {"intro": "古代ローマからルネサンス、近代建築まで。ヨーロッパは世界遺産の宝庫です。国と時代を意識して押さえましょう。", "points": [{"h": "古代ギリシャ・ローマ", "b": "アテネのアクロポリス（パルテノン神殿）、ローマの円形闘技場コロッセオ、ローマ帝国の北限を示すイギリスのハドリアヌスの長城など、古代文明の遺産。"}, {"h": "中世の聖地と大聖堂", "b": "潮で姿を変えるフランスのモン・サン・ミシェル、奇岩の上の修道院メテオラ（ギリシャ）、600年以上かけて完成したドイツのケルン大聖堂など。"}, {"h": "水の都とルネサンス", "b": "運河の街ヴェネツィア、花の大聖堂で知られるルネサンスの中心フィレンツェなど、イタリアの歴史都市が数多く登録されています。"}, {"h": "ガウディと近代建築", "b": "バルセロナの未完の大聖堂サグラダ・ファミリア（ガウディ設計、建設は現在も継続）など、近現代の建築も世界遺産に含まれます。"}, {"h": "城と宮殿", "b": "「白鳥城」ノイシュヴァンシュタイン城は、2025年に、バイエルン王ルートヴィヒ2世の宮殿群として世界遺産に登録されました。"}, {"h": "スペインの古都", "b": "大聖堂・アルカサルで知られるセビリア（南部）など、イスラムとキリスト教の文化が交わった歴史都市が評価されています。"}, {"h": "見どころの多様さ", "b": "ヨーロッパの世界遺産は、神殿・城・大聖堂・歴史地区・近代建築まで幅広いのが特徴。同じ国でも、時代の異なる遺産が並びます。"}]}, "africa": {"intro": "ピラミッドやサバンナ、岩窟教会など、アフリカには壮大な文明と大自然の遺産があります。地域ごとの見どころを押さえましょう。", "points": [{"h": "古代エジプト", "b": "ギザのピラミッドとスフィンクス（メンフィスとその墓地遺跡）、ダム建設で移築されたアブ・シンベル神殿、王家の谷やカルナック神殿がある古代都市テーベ（現ルクソール）など。"}, {"h": "大自然とサバンナ", "b": "ヌーの大移動で知られるセレンゲティ（タンザニア）、アフリカ最高峰キリマンジャロ、雷鳴のような轟音のヴィクトリアの滝（ザンビア／ジンバブエ）など。"}, {"h": "独自の建築遺産", "b": "岩を掘り抜いた11の聖堂・ラリベラの岩窟教会群（エチオピア、「アフリカのエルサレム」）、国名の由来にもなったグレート・ジンバブエ遺跡（精巧な石積み）など。"}, {"h": "交易と学問の古都", "b": "迷路のような旧市街フェズ（モロッコ）、サハラ交易とイスラム学問の中心トンブクトゥ（マリ、泥のモスク）、香料交易のザンジバル・ストーン・タウンなど。"}, {"h": "負の遺産", "b": "大西洋奴隷貿易の拠点ゴレ島（セネガル）、マンデラが収監されアパルトヘイト闘争を象徴するロベン島（南アフリカ）など、人類が向き合うべき歴史も遺産です。"}, {"h": "人類の起源", "b": "「人類のゆりかご」と呼ばれる南アフリカの人類化石遺跡群（スタークフォンテン洞窟など）は、初期人類の化石が多数出土した重要な場所です。"}, {"h": "固有種の宝庫", "b": "キツネザルなど固有種が集まるマダガスカルの熱帯雨林、砂漠に消える川がつくるボツワナのオカバンゴ・デルタなど、独自の生態系が評価されています。※近年、危機遺産リストを脱した遺産もあります。"}]}, "americas": {"intro": "インカやマヤの遺跡から、雄大な自然遺産まで。南北アメリカの世界遺産を、文明と大自然の両面から押さえましょう。", "points": [{"h": "インカ帝国", "b": "「空中都市」マチュ・ピチュ（ペルー、標高約2,400m）、上空からしか全容が見えないナスカの地上絵など、アンデス文明の遺産が有名です。"}, {"h": "マヤ・アステカ文明", "b": "春分・秋分に蛇の影が現れるチチェン・イッツァ（メキシコ）、「太陽のピラミッド」のテオティワカン、密林のマヤ都市ティカル（グアテマラ）など。"}, {"h": "世界初の国立公園", "b": "間欠泉で有名なイエローストーン（アメリカ）は、1872年に指定された世界で最初の国立公園。コロラド川が刻んだグランド・キャニオンも代表的な自然遺産です。"}, {"h": "進化論と孤島", "b": "独自の進化を遂げた生物が進化論に影響を与えたガラパゴス諸島（エクアドル）、モアイ像で知られるイースター島（ラパ・ヌイ、チリ領）など、驚きの島々。"}, {"h": "大瀑布と氷河", "b": "ブラジルとアルゼンチンの国境にまたがるイグアスの滝、パタゴニアの巨大氷河ペリト・モレノ（ロス・グラシアレス、アルゼンチン）など、水と氷の絶景。"}, {"h": "都市景観と負の側面", "b": "コルコバードのキリスト像で名高いリオデジャネイロの景観群、かつて銀山で栄えたボリビアのポトシ（植民地時代の光と影）など。"}, {"h": "象徴とモニュメント", "b": "フランスから贈られたニューヨークの自由の女神像は、アメリカ独立100周年を記念したもの。国どうしの歴史や友好を伝える遺産です。"}]}, "oceania": {"intro": "巨大な一枚岩やサンゴ礁、先住民の聖地など、オセアニアには独特の自然と文化の遺産があります。見どころを押さえましょう。", "points": [{"h": "先住民の聖地ウルル", "b": "オーストラリア中央部の巨大な一枚岩ウルル（エアーズロック）は、アボリジニの聖地。「ウルル・カタ・ジュタ国立公園」として、自然と文化をあわせ持つ複合遺産です。"}, {"h": "世界最大のサンゴ礁", "b": "オーストラリア北東岸のグレート・バリア・リーフは、宇宙からも見える世界最大のサンゴ礁。多様な海洋生物を育む自然遺産です。"}, {"h": "ニュージーランドの自然", "b": "氷河が削ったフィヨルドのテ・ワヒポウナム（南西NZ、ミルフォード・サウンドを含む）、マオリの聖地でもある火山地帯トンガリロ国立公園など。"}, {"h": "20世紀建築", "b": "貝殻のような屋根で知られるシドニー・オペラハウスは、20世紀を代表する建築作品として世界遺産に登録されています。"}, {"h": "太平洋の古代遺跡", "b": "玄武岩で築かれた海上都市ナン・マドール（ミクロネシア、「太平洋のベニス」）、世界最古級の農耕跡クックの初期農耕遺跡（パプアニューギニア）など。"}, {"h": "ユニークな自然", "b": "世界最大級の砂の島フレーザー島（カ・ガリ）、ユーカリの精油が青い霞を生むブルー・マウンテンズ、生きた化石ストロマトライトが残るシャーク湾など。"}, {"h": "負の遺産", "b": "19世紀の流刑地に関する「オーストラリアの囚人遺跡群」は、大英帝国の流刑の歴史を伝える負の遺産です。"}]}};
+function buildStudyCards(){
+  const grid=document.getElementById('studyGrid');
+  grid.innerHTML='';
+  ORDER.forEach(key=>{
+    const g=QUIZ[key];
+    const n=(STUDY[key]&&STUDY[key].points)?STUDY[key].points.length:0;
+    const card=document.createElement('div');
+    card.className='gcard lcard';
+    card.onclick=()=>showStudyGenre(key);
+    card.innerHTML=`<div class="ji">${g.ji}</div><div class="nm">${g.name}</div><div class="ct">解説 ${n} トピック</div>`;
+    grid.appendChild(card);
+  });
+}
+function openStudy(){ showScreen('study'); }
+function showStudyGenre(key){
+  const g=QUIZ[key]; const d=STUDY[key];
+  document.getElementById('studyJi').textContent=g.ji;
+  document.getElementById('studyName').textContent=g.name;
+  let html='';
+  if(d&&d.intro) html+='<div class="study-intro">'+escapeHtml(d.intro)+'</div>';
+  if(d&&d.points) d.points.forEach((p,i)=>{
+    html+='<div class="lpoint"><div class="lh"><span class="no">'+(i+1)+'</span><span>'+escapeHtml(p.h)+'</span></div><div class="lb">'+escapeHtml(p.b)+'</div></div>';
+  });
+  document.getElementById('studyBody').innerHTML=html;
+  document.getElementById('studyQuizBtn').onclick=()=>startGame(key);
+  showScreen('studyDetail');
+}
+
 buildGenreCards();
+buildStudyCards();
 resizeCanvas();
 drawBg();
 document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
